@@ -1,0 +1,22 @@
+# Ignore everything
+*
+
+# Ignore build directories and files
+build/
+cmake-build-*/
+
+# Ignore temporary files
+*.o
+*.obj
+*.log
+*.swp
+*.tmp
+
+# Allow C source and header files
+!*.c
+!*.c++
+!*.h
+
+# Allow the CMakeLists.txt file
+!CMakeLists.txt
+
