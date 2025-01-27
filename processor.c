@@ -6,46 +6,56 @@
 
 #include "process.h"
 #include "processor.h"
-#include "round_robin.h"
 
-Processor * createProcessor () {
+const char * processorStateToString(const enum ProcessorState state) {
+    switch (state) {
+        case EXECUTING: return "Processor Executing";
+        case PROCESSOR_FAILED: return "Processor Failed";
+        case PROCESSOR_IS_NULL: return "Processor is NULL";
+        case PROCESSOR_MEMORY_ALLOCATION_FAILED: return "Processor Memory Allocation Failed";
+        default: return "Unknown ProcessorState";
+    }
+}
+
+Processor * createProcessor (const unsigned int id) {
     Processor * processor = (Processor *) malloc(sizeof(Processor));
     if (processor == NULL) {
-        printf("Cannot allocate memory to create processor\n");
+        printf("%s\n", processorStateToString(PROCESSOR_MEMORY_ALLOCATION_FAILED));
         exit(0);
     }
-    processor->queue = createRoundRobin();
-    processor->nextProcessId = 0;
-    processor->CYCLES = 0;
+    processor->id = id;
+    processor->cycles = 0;
     return processor;
 }
 
-Process * execute (Processor * processor) {
-    if (processor == NULL || processor->queue == NULL) {
-        printf("No processes to execute\n");
-        return NULL;
-    }
-    Process * process = dequeue(processor->queue);
-    if (process->state == READY) {
-        const float prevExecTime = process->remainingExecutionTime;
-        process->state = RUNNING;
-        process->remainingExecutionTime--;
-        process->state = randomState();
-    } else {
-        process->state = randomState();
-    }
-    processor->CYCLES++;
-    return process;
+enum ProcessState randomProcessState () {
+    srand(time(NULL));
+    const int outcome = rand() % 100 + 1;
+    if (outcome < 33) return READY;
+    else if (outcome >= 33 && outcome < 66) return BLOCKED;
+    else return WAITING;
 }
 
-void addProcess (Processor * processor, Process * process) {
-    if (processor == NULL || processor->queue == NULL) {
-        printf("Processor or queue is null\n");
-        return;
+Process * execute (Processor * processor, Process * process) {
+    if (processor == NULL) {
+        printf("%s\n", processorStateToString(PROCESSOR_IS_NULL));
+        return NULL;
     }
     if (process == NULL) {
-        printf("Process is null\n");
-        return;
+        printf("%s\n", processStateToString(PROCESS_IS_NULL));
+        return NULL;
     }
-    enqueue(processor->queue, process);
+    if (process->state == READY) {
+        process->state = RUNNING;
+        process->remainingExecutionTime--;
+    }
+    processor->cycles++;
+    process->timeQueued++;
+    if (process->remainingExecutionTime == 0) {
+        process->state = FINISHED;
+        process->file = NULL;
+    } else {
+        process->state = randomProcessState();
+    }
+    return process;
 }

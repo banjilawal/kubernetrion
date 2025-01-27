@@ -5,17 +5,20 @@
 #ifndef PROCESSOR_H
 #define PROCESSOR_H
 
-#include "round_robin.h"
+typedef enum ProcessorState {
+    EXECUTING,
+    PROCESSOR_FAILED,
+    PROCESSOR_IS_NULL,
+    PROCESSOR_MEMORY_ALLOCATION_FAILED
+} ProcessorErrorState;
+const char * processorStateToString(const enum ProcessorState state);
 
 typedef struct Processor {
-    RoundRobin * queue;
-    unsigned int nextProcessId;
-    unsigned int CYCLES;
+    unsigned int id;
+    unsigned int cycles;
 } Processor;
-
-Processor * createProcessor ();
-Process * execute (Processor * processor);
-void addProcess (Processor * processor, Process * process);
-
+Processor * createProcessor (const unsigned int id);
+Process *  execute (Processor * processor, Process * process);
+ProcessState randomProcessState ();
 
 #endif //PROCESSOR_H
