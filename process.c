@@ -32,13 +32,12 @@ const char * processStateToString(const enum ProcessState state) {
 
 /* Process functions */
 Process* createProcess(
-    Process * parent,
-    const unsigned int id,
     const char* name,
-    ProcessState state,
-    unsigned int priority,
-    float remainingExecutionTime,
-    File * file
+    File* file,
+    const unsigned int id,
+    const unsigned int priority,
+    const unsigned int remainingMilliseconds,
+    Process * parent
 ) {
     Process * process = (Process *) malloc(sizeof(Process));
     if (process == NULL) {
@@ -48,9 +47,8 @@ Process* createProcess(
     process->parent = parent;
     process->id = id;
     process->name = strdup(name);
-    process->state = state;
     process->priority = priority;
-    process->remainingExecutionTime = remainingExecutionTime;
+    process->remainingMilliseconds = remainingMilliseconds;
     process->file = file;
     process->timeQueued = 0;
     process->child = NULL;
@@ -63,7 +61,7 @@ void killProcess(Process * process) {
     if (process != NULL && process->child == NULL && process->childrenCount == 0) {
         process->file = NULL;
         process->parent = NULL;
-        free(process->name);
+        free((void *) process->name);
         free(process);
     }
 }
@@ -91,10 +89,15 @@ const char * processToString(const Process * process) {
         return NULL;
     }
 
-    const char *format = "Process[address:%p, ID:%d, Name:%s, State:%s, RemainingTime:%.2f, CPU Cycles:%d, File:%s]";
+    unsigned int parentId = 0;
+    if (process->parent != NULL) { parentId = process->parent->id; }
+
+
+
+    const char *format = "Process[address:%p, ParentID:%d ID:%d, Name:%s, State:%s, Priority:%d RemainingMilliseconds:%d, CPU Cycles:%d, File:%s]";
     snprintf(
-        string, bufferSize, format, (void *)process, process->id, process->name,
-        processStateToString(process->state), process->remainingExecutionTime, process->timeQueued,
+        string, bufferSize, format, (void *)process, parentId, process->id, process->name,
+        processStateToString(process->state), process->priority, process->remainingMilliseconds, process->timeQueued,
         (process->file != NULL && process->file->descriptor != NULL) ? process->file->descriptor->name : "NULL"
     );
     return string;

@@ -47,11 +47,11 @@ Process * execute (Processor * processor, Process * process) {
     }
     if (process->state == READY) {
         process->state = RUNNING;
-        process->remainingExecutionTime--;
+        process->remainingMilliseconds--;
     }
     processor->cycles++;
     process->timeQueued++;
-    if (process->remainingExecutionTime == 0) {
+    if (process->remainingMilliseconds == 0) {
         process->state = FINISHED;
         process->file = NULL;
     } else {

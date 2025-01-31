@@ -29,26 +29,25 @@ const char * processStateToString(const ProcessState state);
 
 /* Process data types and methods */
 typedef struct Process {
-    char* name;
+    const char* name;
     File* file;
     unsigned int id;
     unsigned int childrenCount;
     unsigned int priority;
     unsigned int timeQueued;
-    float remainingExecutionTime;
+    unsigned int remainingMilliseconds;
     struct Process * parent;
     struct Process * child;
     ProcessState state;
 } Process;
 
 Process* createProcess(
-    Process * parent,
-    const unsigned int id,
     const char* name,
-    ProcessState state,
+    File* file,
+    unsigned int id,
     unsigned int priority,
-    float remainingExecutionTime,
-    File * file
+    unsigned int remainingMilliseconds,
+    Process * parent
 );
 void killProcess(Process * process);
 void removeChild(Process * parent, Process* child);

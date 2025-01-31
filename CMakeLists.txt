@@ -3,6 +3,7 @@ project(kubernetrion C)
 
 set(CMAKE_C_STANDARD 23)
 
-add_executable(kubernetrion main.c file.h file.c directory.h directory.c process.h process.c processor.h
-        processor.c queue.h queue.c
+add_executable(kubernetrion file.h file.c directory.h directory.c process.h process.c processor.h
+        processor.c queue.h queue.c compute.c
+        processGenerator.c
 )
