@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <string.h>
 
-#include "file.h"
+#include "include/file.h"
 
 const char * fileStateToString (const FileState state) {
     switch (state) {

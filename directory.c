@@ -6,8 +6,8 @@
 #include <unistd.h>
 #include <string.h>
 
-#include "file.h"
-#include "directory.h"
+#include "include/file.h"
+#include "include/directory.h"
 
 Directory * createDirectory (Directory * parent, char * name, unsigned int id) {
     Directory * directory = (Directory *) malloc(sizeof(Directory));
