@@ -5,7 +5,7 @@
 #include <unistd.h>
 
 #include "process.h"
-#include "processor.h"
+#include "include/processor.h"
 
 const char * processorStateToString(const enum ProcessorState state) {
     switch (state) {
