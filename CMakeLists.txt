@@ -4,7 +4,16 @@ project(kubernetrion C)
 include_directories(${PROJECT_SOURCE_DIR}/include)
 set(CMAKE_C_STANDARD 23)
 
-add_executable(kubernetrion include/file.h file.c include/directory.h directory.c include/process.h cmake-build-debug/src/process/process.c include/processor.h
-        processor.c include/queue.h queue.c compute.c
-        cmake-build-debug/src/process/processGenerator.c
+add_executable(kubernetrion
+        include/file.h
+        src/file/file.c
+        include/directory.h
+        src/directory/directory.c
+        include/process.h
+        src/process/process.c
+        include/processor.h
+        processor.c
+        include/queue.h src/queue/queue.c
+        compute.c
+        src/process/processGenerator.c
 )
