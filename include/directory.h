@@ -24,7 +24,7 @@ typedef struct Directory {
 Directory * create_directory (Directory * parent, char * name, unsigned int id);
 
 // Directory: Destruction functions:
-// NONE
+void destroy_directory (Directory * directory);
 
 // Directory: Mutator Functions
 bool add_file (Directory * directory, File * file);
@@ -56,7 +56,7 @@ typedef struct DirectoryTree {
 DirectoryTree * create_directory_tree (Directory * root);
 
 // DirectoryTree: Destruction functions:
-// NONE
+void destroy_directory_tree (DirectoryTree * directory_tree);
 
 // DirectoryTree: Mutator Functions
 void add_directory_to_tree(const DirectoryTree* directory_tree, Directory * directory);

@@ -31,9 +31,9 @@ Processor * createProcessor (const unsigned int id) {
 enum ProcessState randomProcessState () {
     srand(time(NULL));
     const int outcome = rand() % 100 + 1;
-    if (outcome < 33) return READY;
-    else if (outcome >= 33 && outcome < 66) return BLOCKED;
-    else return WAITING;
+    if (outcome < 33) return PROCESS_READY;
+    else if (outcome >= 33 && outcome < 66) return PROCESS_BLOCKED;
+    else return PROCESS_WAITING;
 }
 
 Process * execute (Processor * processor, Process * process) {
@@ -42,17 +42,17 @@ Process * execute (Processor * processor, Process * process) {
         return NULL;
     }
     if (process == NULL) {
-        printf("%s\n", processStateToString(PROCESS_IS_NULL));
+        printf("%s\n", process_state_to_string(PROCESS_IS_NULL));
         return NULL;
     }
-    if (process->state == READY) {
-        process->state = RUNNING;
-        process->remainingMilliseconds--;
+    if (process->state == PROCESS_READY) {
+        process->state = PROCESS_RUNNING;
+        process->milliseconds_remaining--;
     }
     processor->cycles++;
-    process->timeQueued++;
-    if (process->remainingMilliseconds == 0) {
-        process->state = FINISHED;
+    process->initial_queue_entry_time++;
+    if (process->milliseconds_remaining == 0) {
+        process->state = PROCESS_FINISHED;
         process->file = NULL;
     } else {
         process->state = randomProcessState();

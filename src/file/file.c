@@ -19,12 +19,13 @@
 // NONE
 // FileState: ToString Function:
 // NONE
+
 // FileState: toString
 const char * file_state_to_string (const FileState state) {
     switch (state) {
-        case PROCESS_READING_FILE: return "PROCESS_READING_FILE";
+        case PROCESS_READING_FROM_FILE: return "PROCESS_READING_FROM_FILE";
         case PROCESS_WRITING_TO_FILE: return "PROCESS_WRITING_TO_FILE";
-        case FILE_CLOSED: return "FILE_CLOSED";
+        case FILE_IS_CLOSED: return "FILE_IS_CLOSED";
         default: return "UNKNOWN ERROR";
     }
 }
@@ -63,14 +64,18 @@ FileDescriptor * create_file_descriptor (char * name, unsigned int id, unsigned 
         exit(0);
     }
     descriptor->id = id;
-    descriptor->state = FILE_CLOSED;
+    descriptor->state = FILE_IS_CLOSED;
     descriptor->name = strdup(name);
     descriptor->megabytes = megabytes;
     return descriptor;
 }
 
 // FileDescriptor: Destruction Functions:
-// NONE
+void destroy_file_descriptor (FileDescriptor * file_descriptor) {
+    free(file_descriptor->name);
+    free(file_descriptor);
+}
+
 // FileDescriptor: Mutator Functions:
 // NONE
 
@@ -110,12 +115,17 @@ File * create_file (char * name, unsigned int id, unsigned int megabytes) {
     file->descriptor = create_file_descriptor(name, id, megabytes);
     file->search_metrics = initialize_file_search_metrics();
     file->next = NULL;
-    file->prev = NULL;
+    file->previous = NULL;
     return file;
 }
 
 // File: Destruction functions:
-// NONE
+void destroy_file (File * file) {
+    if (file == NULL) return;
+    if (file->next == NULL && file->previous == NULL) {
+        destroy_file_descriptor(file->descriptor);
+    }
+}
 
 // File Mutator Functions
 void set_file_name (File * file, const char * name) { file->descriptor->name = name; }
@@ -172,7 +182,7 @@ bool add_to_file_list (FileList * file_list, File * file) {
         file_list->tail = file;
     } else {
         file_list->tail->next = file;
-        file->prev = file_list->tail;
+        file->previous = file_list->tail;
         file_list->tail = file;
     }
     file_list->size++;
@@ -188,10 +198,10 @@ bool delete_from_file_list (FileList * file_list, const unsigned int file_id) {
         file_list->head = file->next;
     }
     if (file == file_list->tail) {
-        file_list->tail = file->prev;
+        file_list->tail = file->previous;
     }
-    if (file->prev != NULL) {
-        file->prev->next = file->next;
+    if (file->previous != NULL) {
+        file->previous->next = file->next;
     }
     file_list->totalMegabytes -= file->descriptor->megabytes;
     file_list->size--;
@@ -211,10 +221,10 @@ File * pop_from_file_list (FileList * file_list, const unsigned int file_id) {
         file_list->head = file->next;
     }
     if (file == file_list->tail) {
-        file_list->tail = file->prev;
+        file_list->tail = file->previous;
     }
-    if (file->prev != NULL) {
-        file->prev->next = file->next;
+    if (file->previous != NULL) {
+        file->previous->next = file->next;
     }
     file_list->totalMegabytes -= file->descriptor->megabytes;
     file_list->size--;

@@ -13,7 +13,14 @@
 #define NULL_FILE_ERROR_CODE 3030
 
 /*=== FileState Enum and Functions ===*/
-typedef enum FileState {PROCESS_READING_FILE, PROCESS_WRITING_TO_FILE, FILE_CLOSED, FILE_OPEN} FileState;
+typedef enum FileState {
+    PROCESS_READING_FROM_FILE,
+    PROCESS_WRITING_TO_FILE,
+    FILE_IS_CLOSED,
+    FILE_IS_OPEN,
+    FILE_IS_NULL,
+    FILE_MEMORY_ALLOCATION_FAILED
+} FileState;
 // FileState: Destruction Functions:
 // NONE
 // FileState: Mutator Functions:
@@ -63,7 +70,8 @@ typedef struct FileDescriptor {
 FileDescriptor * create_file_descriptor (char * name, unsigned int id, unsigned int megabytes);
 
 // FileDescriptor: Destruction Functions:
-// NONE
+void destroy_file_descriptor (FileDescriptor * file_descriptor);
+
 // FileDescriptor: Mutator Functions:
 // NONE
 // FileDescriptor: Accessor Functions:
@@ -79,15 +87,14 @@ typedef struct File {
     FileDescriptor * descriptor;
     FileSearchMetrics * search_metrics;
     struct File * next;
-    struct File * prev;
+    struct File * previous;
 } File;
 
 // File: Creation functions:
 File * create_file (char * name, unsigned int id, unsigned int megabytes);
 
-
 // File: Destruction functions:
-// NONE
+void destroy_file (File * file);
 
 // File: Mutator Functions
 void set_file_name (File * file, const char * name);
@@ -115,7 +122,7 @@ typedef struct FileList {
 FileList * create_file_list (void);
 
 // FileList: Destruction functions:
-// NONE
+void destroy_file_list (FileList * file_list);
 
 // FileList: Mutator Functions
 bool add_to_file_list (FileList * file_list, File * file);

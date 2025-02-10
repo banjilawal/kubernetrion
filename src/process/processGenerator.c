@@ -47,15 +47,15 @@ static Process * generateProcess(Process * parent) {
     const unsigned int priority = 1;
     const unsigned int remainingMilliseconds = randomMilliseconds();
     File * file = NULL;
-    return createProcess(name, file, id, priority, remainingMilliseconds, parent);
+    return create_process(name, file, id, priority, remainingMilliseconds, parent);
 }
 
 int main(void) {
     srand(time(NULL));
     Process * parent = generateProcess(NULL);
     Process * child = generateProcess(parent);
-    printf("generated process:%s\n", processToString(parent));
-    printf("generated process:%s\n", processToString(child));
+    printf("generated process:%s\n", process_to_string(parent));
+    printf("generated process:%s\n", process_to_string(child));
 
     free(child);
     free(parent);

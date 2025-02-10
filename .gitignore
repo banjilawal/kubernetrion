@@ -17,9 +17,11 @@ cmake-build-*/
 !*.c++
 !*.h
 
-# Allow source and header directories
+# Recursivley allow everything in src and include directories
 !src/
+!src/**
 !include/
+!include/*
 
 # Allow the CMakeLists.txt file
 !CMakeLists.txt

@@ -5,60 +5,100 @@
 
 #include "process.h"
 
-#define PROCESS_STRING_SIZE 256
 
-const char * errorStateToString(const enum ErrorState state) {
-    switch (state) {
-        case PROCESS_QUEUE_IS_NULL: return "Process queue is NULL!";
-        case PROCESS_QUEUE_NODE_IS_NULL: return "Process queue node is NULL!";
-        case PROCESS_IS_NULL: return "Process is NULL!";
-        case IS_EMPTY: return "Process queue is empty!";
-        default: return "Unknown error state!";
-    }
-}
 
-const char * processStateToString(const enum ProcessState state) {
-    switch (state) {
-        case READY: return "Ready";
-        case RUNNING: return "Running";
-        case BLOCKED: return "Blocked";
-        case WAITING: return "Waiting";
-        case FINISHED: return "Finished";
+#ifndef PROCESS_H
+#define PROCESS_H
+
+#define NAME_LENGTH 64
+#define MAX_PRIORITY 100
+#define MIN_PRIORITY 1
+
+//
+// Created by banji on 12/10/2024.
+//
+#pragma once
+#include <stdbool.h>
+
+
+
+
+
+
+#endif //PROCESS_H
+
+// const char * errorStateToString(const enum ErrorState state) {
+//     switch (state) {
+//         case PROCESS_QUEUE_IS_NULL: return "Process queue is NULL!";
+//         case PROCESS_NODE_IS_NULL: return "Process queue node is NULL!";
+//         case PROCESS_IS_NULL: return "Process is NULL!";
+//         case PROCESS_QUEUE_IS_EMPTY: return "Process queue is empty!";
+//         default: return "Unknown error state!";
+//     }
+// }
+
+
+/*=== ProcessState Enum and Functions ===*/
+// ProcessState: Destruction Functions:
+// NONE
+// ProcessState: Mutator Functions:
+// NONE
+// ProcessState: Accessor Functions:
+// NONE
+// ProcessState: Boolean Functions:
+// NONE
+// ProcessState: ToString Function:
+// NONE
+
+// ProcessState: toString Function
+const char * process_state_to_string(const ProcessState process_state) {
+    switch (process_state) {
+        case PROCESS_READY: return "Ready";
+        case PROCESS_RUNNING: return "Running";
+        case PROCESS_BLOCKED: return "Blocked";
+        case PROCESS_WAITING: return "Waiting";
+        case PROCESS_FINISHED: return "Finished";
         case PROCESS_IS_NULL: return "Process is NULL!";
+        case PROCESS_READING_FILE: return "Process is reading file";
+        case PROCESS_WRITING_FILE: return "Process is writing file";
         case PROCESS_MEMORY_ALLOCATION_FAILED: return "Process memory allocation failed!";
-        default: return "Unknown state";
+        default: return "Unknown process_state";
     }
 }
 
-/* Process functions */
-Process* createProcess(
-    const char* name,
-    File* file,
+/*=== The Process Data Type and Functions ===*/
+
+// Process: Creation Functions
+Process * create_process(
+    const char * name,
+    File * file,
     const unsigned int id,
     const unsigned int priority,
-    const unsigned int remainingMilliseconds,
+    const unsigned int milliseconds_remaining,
     Process * parent
 ) {
     Process * process = (Process *) malloc(sizeof(Process));
     if (process == NULL) {
-        printf("%s\n", processStateToString(PROCESS_MEMORY_ALLOCATION_FAILED));
+        printf("%s\n", process_state_to_string(PROCESS_MEMORY_ALLOCATION_FAILED));
         return NULL;
     }
     process->parent = parent;
     process->id = id;
     process->name = strdup(name);
     process->priority = priority;
-    process->remainingMilliseconds = remainingMilliseconds;
+    process->milliseconds_remaining = milliseconds_remaining;
     process->file = file;
-    process->timeQueued = 0;
+    process->initial_queue_entry_time = 0;
     process->child = NULL;
-    process->childrenCount = 0;
+    process->number_of_child_processes = 0;
 
     return process;
 }
 
-void killProcess(Process * process) {
-    if (process != NULL && process->child == NULL && process->childrenCount == 0) {
+
+// Process: Destruction Functions:
+void destroy_process(Process * process) {
+    if (process != NULL && process->child == NULL && process->number_of_child_processes == 0) {
         process->file = NULL;
         process->parent = NULL;
         free((void *) process->name);
@@ -66,61 +106,84 @@ void killProcess(Process * process) {
     }
 }
 
-void removeChild(Process * parent, Process* child) {
-    if (parent != NULL && child != NULL) {
+// Process: Mutator Functions:
+void remove_child_process(Process * parent, Process* child) {
+    if (parent != NULL && child != NULL && child->child == NULL) {
         if (parent->child == child) {
             child->parent = NULL;
             parent->child = NULL;
-            parent->childrenCount--;
+            parent->number_of_child_processes--;
         }
     }
 }
 
-const char * processToString(const Process * process) {
+// Process: Accessor Functions:
+unsigned int get_process_id(const Process * process) { return process->id; }
+
+// Process: Boolean Functions:
+bool processes_are_equal (const Process * a, const Process * b) { return (a == b || a->id == b->id); }
+
+// Process: ToString Function:
+const char * process_to_string(const Process * process) {
     if (process == NULL) {
-        printf("%s.\n", processStateToString(PROCESS_IS_NULL));
+        printf("%s.\n", process_state_to_string(PROCESS_IS_NULL));
         return NULL;
     }
 
     const int bufferSize = PROCESS_STRING_SIZE * sizeof(char);
     char * string = (char *) malloc(bufferSize);
     if (string == NULL) {
-        printf("Could not allocate memory for processToString.\n");
+        printf("Could not allocate memory for process_to_string.\n");
         return NULL;
     }
 
     unsigned int parentId = 0;
     if (process->parent != NULL) { parentId = process->parent->id; }
 
-
-
-    const char *format = "Process[address:%p, ParentID:%d ID:%d, Name:%s, State:%s, Priority:%d RemainingMilliseconds:%d, CPU Cycles:%d, File:%s]";
+    const char *format = "Process[address:%p, ParentID:%d ID:%d, Name:%s, State:%s, Priority:%d "
+                         "RemainingMilliseconds:%d, CPU Cycles:%d, File:%s]";
     snprintf(
         string, bufferSize, format, (void *)process, parentId, process->id, process->name,
-        processStateToString(process->state), process->priority, process->remainingMilliseconds, process->timeQueued,
+        process_state_to_string(process->state),
+        process->priority, process->milliseconds_remaining,
+        process->initial_queue_entry_time,
         (process->file != NULL && process->file->descriptor != NULL) ? process->file->descriptor->name : "NULL"
     );
     return string;
 }
 
-/* ProcessQueueNode functions */
-const char * processQueueNodeStateToString(const ProcessQueueNodeState state) {
-    switch (state) {
-        case PROCESS_QUEUE_NODE_IS_NULL: return "ProcessQueueNode is NULL!";
-        case PROCESS_QUEUE_NODE_MEMORY_ALLOCATION_FAILED: return "ProcessQueueNode memory allocation failed!";
-        default: return "Unknown ProcessQueueNode state!";
+/*=== ProcessNodeState Enum and Functions ===*/
+
+// ProcessNodeState: Destruction Functions:
+// NONE
+// ProcessNodeState: Mutator Functions:
+// NONE
+// ProcessNodeState: Accessor Functions:
+// NONE
+// ProcessNodeState: Boolean Functions:
+// NONE
+
+// ProcessNodeState: ToString Function:
+const char * process_node_state_to_string(const ProcessNodeState process_node_state) {
+    switch (process_node_state) {
+        case PROCESS_NODE_IS_NULL: return "ProcessNode is NULL!";
+        case PROCESS_NODE_MEMORY_ALLOCATION_FAILED: return "ProcessNode memory allocation failed!";
+        default: return "Unknown process_state";
     }
 }
 
-ProcessQueueNode * createProcessQueueNode(Process * process) {
+/*=== The ProcessNode Data Type and It's Functions ===*/
+
+// ProcessNode: Creation functions:
+ProcessNode * create_process_node(Process * process) {
     if (process == NULL) {
-        printf("%s.\n", processQueueNodeStateToString(PROCESS_QUEUE_NODE_MEMORY_ALLOCATION_FAILED));
+        printf("%s.\n", process_node_to_string(PROCESS_NODE_MEMORY_ALLOCATION_FAILED));
         return NULL;
     }
 
-    ProcessQueueNode * processQueueNode = (ProcessQueueNode *) malloc(sizeof(ProcessQueueNode));
+    ProcessNode * processQueueNode = (ProcessNode *) malloc(sizeof(ProcessNode));
     if (processQueueNode == NULL) {
-        printf("%s\n", processQueueNodeStateToString(PROCESS_QUEUE_NODE_MEMORY_ALLOCATION_FAILED));
+        printf("%s\n", process_node_to_string(PROCESS_NODE_MEMORY_ALLOCATION_FAILED));
         return NULL;
     }
     processQueueNode->process = process;
@@ -129,181 +192,35 @@ ProcessQueueNode * createProcessQueueNode(Process * process) {
     return processQueueNode;
 }
 
-/* ProcessQueue functions */
-const char * processQueueStateToString(const enum ProcessQueueState state) {
-    switch (state) {
-        case IS_EMPTY: return "Queue IS_EMPTY";
-        case IS_NOT_EMPTY: return "Queue IS_NOT_EMPTY";
-        case PROCESS_QUEUE_IS_NULL: return "Queue is NULL!";
-        case PROCESS_QUEUE_MEMORY_ALLOCATION_FAILED: return "Queue memory allocation failed!";
-        default: return "Unknown ProcessQueueState state!";
+// ProcessNode: Destruction functions:
+void destroy_process_node(ProcessNode * process_node) {
+    if (process_node != NULL) return;
+    if (process_node->next == NULL && process_node->previous == NULL) {
+        destroy_process_node(process_node->next);
+        free(process_node->next);
+        free(process_node->previous);
+        destroy_process(process_node->process);
+        free(process_node);
     }
 }
 
-ProcessQueue * createProcessQueue() {
-    ProcessQueue *processQueue = (ProcessQueue *) malloc(sizeof(ProcessQueue));
-    if (processQueue == NULL) {
-        printf("Could not allocate memory for processQueue.\n");
-        return NULL;
+// ProcessNode: Mutator Functions:
+// NONE
+// ProcessNode: Accessor Functions:
+// NONE
+// ProcessNode: Boolean Functions:
+// NONE
+
+// ProcessNode: ToString Function:
+const char * process_node_to_string(const ProcessNodeState process_node_state) {
+    switch (process_node_state) {
+        case PROCESS_NODE_IS_NULL: return "ProcessNode is NULL!";
+        case PROCESS_NODE_MEMORY_ALLOCATION_FAILED: return "ProcessNode memory allocation failed!";
+        default: return "Unknown ProcessNode process_node_state!";
     }
-    processQueue->head = NULL;
-    processQueue->tail = NULL;
-    processQueue->size = 0;
-    processQueue->state = IS_EMPTY;
-    return processQueue;
 }
 
-Process * popProcess(ProcessQueue *queue) {
-    if (queue == NULL) {
-        printf("%s\n", processQueueStateToString(PROCESS_QUEUE_IS_NULL));
-        return NULL;
-    }
-    if (queueIsEmpty(queue)) {
-        printf("%s\n", processQueueStateToString(IS_EMPTY));
-        return NULL;
-    }
-    ProcessQueueNode * node = queue->head;
-    node->next = NULL;
-    node->previous = NULL;
-    Process * process = queue->head->process;
 
-    queue->head = queue->head->next;
-    queue->size--;
-    if (queue->size == 0) { clearQueue(queue); }
-    free(node);
-    return process;
-}
-
-bool addProcess(ProcessQueue* queue, Process* process) {
-    if (queue == NULL) {
-        printf("%s\n", processQueueStateToString(PROCESS_QUEUE_IS_NULL));
-        return false;
-    }
-    if (process == NULL) {
-        printf("%s\n", processStateToString(PROCESS_IS_NULL));
-        return false;
-    }
-
-    ProcessQueueNode * node = createProcessQueueNode(process);
-    if (queueIsEmpty(queue)) {
-        queue->head = queue->tail = node;
-    } else {
-        node->previous = queue->tail;
-        queue->tail->next = node;
-        queue->tail = node;
-    }
-    queue->size++;
-    queue->state = IS_NOT_EMPTY;
-    return true;
-}
-
-bool queueIsEmpty(const ProcessQueue* queue) {
-    if (queue == NULL) {
-        printf("%s\n", errorStateToString(PROCESS_QUEUE_IS_NULL));
-        return true;
-    }
-    if (queue->state == IS_EMPTY || queue->size == 0 ||
-        queue->head->previous == queue->tail ||
-        queue->head == queue->tail && queue->tail == NULL
-    ) {
-        return true;
-    } else { return false; }
-}
-
-void clearQueue(ProcessQueue *queue) {
-    queue->size = 0;
-    queue->state = IS_EMPTY;
-    queue->head = queue->tail = NULL;
-}
-
-Process * findProcessById(const ProcessQueue *queue, const unsigned int processId) {
-    if (queue == NULL) {
-        printf("%s\n", processQueueStateToString(PROCESS_QUEUE_IS_NULL));
-        return NULL;
-    }
-    if (queueIsEmpty(queue)) { return NULL; }
-
-    const ProcessQueueNode * cursor = queue->head;
-    while (cursor != NULL) {
-        if (cursor->process->id == processId) {
-            return cursor->process;
-        }
-        cursor = cursor->next;
-    }
-    return NULL;
-}
-
-Process * findProcessByName(const ProcessQueue *queue, const char * name) {
-    if (queue == NULL) {
-        printf("%s\n", errorStateToString(PROCESS_QUEUE_IS_NULL));
-        return NULL;
-    }
-    if (queueIsEmpty(queue)) { return NULL; }
-
-    ProcessQueueNode *cursor = queue->head;
-    while (cursor != NULL) {
-        if (strcmp(cursor->process->name, name) == 0) {
-            return cursor->process;
-        }
-        cursor = cursor->next;
-    }
-    return NULL;
-}
-
-const char * processQueueToString(const ProcessQueue * queue) {
-    if (queue == NULL) {
-        printf("%s\n", errorStateToString(PROCESS_QUEUE_IS_NULL));
-        return NULL;
-    }
-
-    const int bufferSize = (queue->size * PROCESS_STRING_SIZE) + 64;
-    char * queueString = (char *) malloc(bufferSize);
-    if (queueString == NULL) {
-        printf("Could not allocate memory for processToString.\n");
-        return NULL;
-    }
-    queueString[0] = '\0';
-
-    const ProcessQueueNode * cursor = queue->head;
-    int counter = 0;
-    while (cursor != NULL) {
-        const char * processString = processToString(cursor->process);
-        if (processString != NULL) {
-            int bytesWritten = sprintf(queueString + strlen(queueString + PROCESS_STRING_SIZE + 64), "%d %s\n", counter, processString);
-            if (bytesWritten < 0 || bytesWritten >= bufferSize) {
-                printf("Output exceeded queueString buffer size.\n");
-                free(queueString);
-                return NULL;
-            }
-            free((void *) processString);
-        }
-        cursor = cursor->next;
-        counter++;
-    }
-    sprintf((queueString + 128), "\nqueue size:%d\n", queue->size);
-    return queueString;
-}
-
-/** Prints the entire process queue */
-void printProcessQueue(const ProcessQueue *queue) {
-    if (queue == NULL) {
-        return;
-    }
-
-    const ProcessQueueNode *cursor = queue->head;
-    int counter = 0;
-    while (cursor != NULL) {
-        printf("%d: ", counter);
-        const char * string = processToString(cursor->process);
-        if (string != NULL) {
-            printf("%s\n", string);
-            free((void *) string);
-        }
-        cursor = cursor->next;
-        counter++;
-    }
-    printf("QUEUE [address: %p, size: %d]\n", (void *)queue, queue->size);
-}
 
 
 

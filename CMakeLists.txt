@@ -13,7 +13,7 @@ add_executable(kubernetrion
         src/process/process.c
         include/processor.h
         src/processor/processor.c
-        include/queue.h src/queue/queue.c
+        include/process_queue.h src/queue/process_queue.c
         compute.c
         src/process/processGenerator.c
         src/compute/processTable.c

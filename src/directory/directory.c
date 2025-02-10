@@ -27,7 +27,10 @@ Directory * create_directory (Directory * parent, char * name, unsigned int id) 
 }
 
 // Directory: Destruction functions:
-// NONE
+void destroy_directory (Directory * directory) {
+    destroy_file_list(directory->files);
+    free(directory);
+}
 
 // Directory: Mutator Functions
 bool add_file (Directory * directory, File * file) {
@@ -133,7 +136,10 @@ DirectoryTree * create_directory_tree (Directory * root) {
 }
 
 // DirectoryTree: Destruction functions:
-// NONE
+void destroy_directory_tree(DirectoryTree * directory_tree) {
+    if (directory_tree == NULL) return;
+    free(directory_tree->root);
+}
 
 // DirectoryTree: Mutator Functions
 void add_directory_to_tree (const DirectoryTree * directory_tree, Directory * directory) {
