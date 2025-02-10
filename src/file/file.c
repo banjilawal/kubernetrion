@@ -1,0 +1,272 @@
+//
+// Created by banji on 12/10/2024.
+//
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+
+#include "file.h"
+
+/*=== FileState Enum and Functions ===*/
+// FileState: Destruction Functions:
+// NONE
+// FileState: Mutator Functions:
+// NONE
+// FileState: Accessor Functions:
+// NONE
+// FileState: Boolean Functions:
+// NONE
+// FileState: ToString Function:
+// NONE
+// FileState: toString
+const char * file_state_to_string (const FileState state) {
+    switch (state) {
+        case PROCESS_READING_FILE: return "PROCESS_READING_FILE";
+        case PROCESS_WRITING_TO_FILE: return "PROCESS_WRITING_TO_FILE";
+        case FILE_CLOSED: return "FILE_CLOSED";
+        default: return "UNKNOWN ERROR";
+    }
+}
+
+/*=== The FileSearchMetrics Data Type and Functions ===*/
+
+// FileSearchMetric: Creation Functions
+FileSearchMetrics * initialize_file_search_metrics () {
+    FileSearchMetrics * params = (FileSearchMetrics *) malloc(sizeof(FileSearchMetrics));
+    if (params == NULL) {
+        printf("Cannot allocate memory to init_file_search_params()");
+        exit(0);
+    }
+    params->state = UNDISCOVERED;
+    params->startTime = 0;
+    params->finishTime = 0;
+    return params;
+}
+
+// FileSearchMetric: Destruction Functions:
+// NONE
+// FileSearchMetric: Mutator Functions:
+// NONE
+// FileSearchMetric: Accessor Functions:
+// NONE
+// FileSearchMetric: Boolean Functions:
+// NONE
+
+/*=== The FileDescriptor Data Type and Functions ===*/
+
+// FileDescriptor: Creation Functions
+FileDescriptor * create_file_descriptor (char * name, unsigned int id, unsigned int megabytes) {
+    FileDescriptor * descriptor = (FileDescriptor *) malloc(sizeof(FileDescriptor));
+    if (descriptor == NULL) {
+        printf("Cannot allocate memory to create_file_descriptor()");
+        exit(0);
+    }
+    descriptor->id = id;
+    descriptor->state = FILE_CLOSED;
+    descriptor->name = strdup(name);
+    descriptor->megabytes = megabytes;
+    return descriptor;
+}
+
+// FileDescriptor: Destruction Functions:
+// NONE
+// FileDescriptor: Mutator Functions:
+// NONE
+
+// FileDescriptor: Accessor Functions
+const char * file_descriptor_to_string (const FileDescriptor * fileMetadata) {
+    if (fileMetadata == NULL) return "NULL File Metadata";
+
+    const int bufferSize = 512;
+    char * string = (char *) malloc(bufferSize * sizeof(char));
+    if (string == NULL) {
+        printf("Cannot allocate memory to fileMetadataString()");
+        exit(0);
+    }
+
+    const char * format = "id:%d, name:%s megabytes:%d state:%s";
+    snprintf(
+        string, bufferSize,
+        format, fileMetadata->id,
+        fileMetadata->name,
+        fileMetadata->megabytes,
+        file_state_to_string(fileMetadata->state)
+    );
+    return string;
+}
+
+// FileDescriptor: Boolean Functions: NONE
+
+/*=== The File Data Type and It's Functions ===*/
+
+// File: Creation functions
+File * create_file (char * name, unsigned int id, unsigned int megabytes) {
+    File * file = (File *) malloc(sizeof(File));
+    if (file == NULL) {
+        printf("Cannot allocate memory to create_file()");
+        exit(0);
+    }
+    file->descriptor = create_file_descriptor(name, id, megabytes);
+    file->search_metrics = initialize_file_search_metrics();
+    file->next = NULL;
+    file->prev = NULL;
+    return file;
+}
+
+// File: Destruction functions:
+// NONE
+
+// File Mutator Functions
+void set_file_name (File * file, const char * name) { file->descriptor->name = name; }
+
+// File: Accessor Functions
+unsigned int get_file_id (const File * file) { return file->descriptor->id; }
+const char * get_file_name (const File * file) { return file->descriptor->name; }
+
+// File: Boolean Functions
+bool is_empty_file (const File * file) { return file->descriptor->megabytes == 0; }
+
+bool files_are_equal(const File * a, const File * b) {
+    return a->descriptor->id == b->descriptor->id &&a->descriptor->megabytes == b->descriptor->megabytes
+        && strcmp(a->descriptor->name, b->descriptor->name) == 0;
+}
+
+// File: ToString Function
+const char * file_to_string (const File * file) {
+    if (file == NULL) return "NULL File";
+
+    const int bufferSize = 1024;
+    char * string = (char *) malloc(bufferSize * sizeof(char));
+    if (string == NULL) {
+        printf("Cannot allocate memory to fileString()");
+        exit(0);
+    }
+
+    const char * format = "File[address:%p %s]";
+    snprintf(string, bufferSize, format, (void *) file, file_descriptor_to_string(file->descriptor));
+    return string;
+}
+
+/*=== The FileList Data Type and It's Functions ===*/
+
+// FileList: Creation functions
+FileList * create_file_list (void) {
+    FileList * fileList = (FileList *) malloc(sizeof(FileList));
+    if (fileList == NULL) {
+        printf("Cannot allocate memory to create_file_list()");
+        exit(0);
+    }
+    fileList->head = NULL;
+    fileList->tail = NULL;
+    fileList->size = 0;
+    fileList->totalMegabytes = 0;
+    return fileList;
+}
+
+// FileList: Mutator Functions
+bool add_to_file_list (FileList * file_list, File * file) {
+    if (file_list == NULL || file == NULL) return false;
+    if (file_list->head == NULL) {
+        file_list->head = file;
+        file_list->tail = file;
+    } else {
+        file_list->tail->next = file;
+        file->prev = file_list->tail;
+        file_list->tail = file;
+    }
+    file_list->size++;
+    file_list->totalMegabytes += file->descriptor->megabytes;
+    return true;
+}
+
+bool delete_from_file_list (FileList * file_list, const unsigned int file_id) {
+    File  *  file = file_list_id_search(file_list, file_id);
+    if (file_list == NULL || file == NULL) return false;
+
+    if (file == file_list->head) {
+        file_list->head = file->next;
+    }
+    if (file == file_list->tail) {
+        file_list->tail = file->prev;
+    }
+    if (file->prev != NULL) {
+        file->prev->next = file->next;
+    }
+    file_list->totalMegabytes -= file->descriptor->megabytes;
+    file_list->size--;
+
+    free(file->descriptor);
+    file->descriptor = NULL;
+    free(file);
+    file = NULL;
+    return true;
+}
+
+File * pop_from_file_list (FileList * file_list, const unsigned int file_id) {
+    File  *  file = file_list_id_search(file_list, file_id);
+    if (file == NULL) return NULL;
+
+    if (file == file_list->head) {
+        file_list->head = file->next;
+    }
+    if (file == file_list->tail) {
+        file_list->tail = file->prev;
+    }
+    if (file->prev != NULL) {
+        file->prev->next = file->next;
+    }
+    file_list->totalMegabytes -= file->descriptor->megabytes;
+    file_list->size--;
+    return file;
+}
+
+// FileList: Accessor Functions
+File * file_list_name_search (const FileList * file_list, const char * fileName) {
+    if (is_empty_file_list(file_list)) return NULL;
+    File * cursor = file_list->head;
+    while (cursor != NULL) {
+        if (strcmp(cursor->descriptor->name, fileName) == 0) return cursor;
+        cursor = cursor->next;
+    }
+    free(cursor);
+    cursor = NULL;
+    return NULL;
+}
+
+File * file_list_id_search (const FileList * file_list, const unsigned int file_id) {
+    if (is_empty_file_list(file_list)) return NULL;
+    File * cursor = file_list->head;
+    while (cursor != NULL) {
+        if (get_file_id(cursor) == file_id) return cursor;
+        cursor = cursor->next;
+    }
+    free(cursor);
+    cursor = NULL;
+    return NULL;
+}
+
+void print_file_list (const FileList * file_list) {
+    if (file_list == NULL) {
+        printf("NULL File List");
+        return;
+    }
+    File * cursor = file_list->head;
+    while (cursor != NULL) {
+        printf("%s\n", file_to_string(cursor));
+        cursor = cursor->next;
+    }
+    printf("%d files %d MB\n", file_list->size,file_list->totalMegabytes);
+    free(cursor);
+    cursor = NULL;
+}
+
+// FileList: Boolean Functions
+bool is_empty_file_list (const FileList * file_list) {
+    return file_list->head == NULL || file_list->tail == NULL || file_list->totalMegabytes == 0;
+}
+
+// FileList: ToString Functions:
+// NONE
+
+
