@@ -1,34 +1,15 @@
+#pragma once
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
 
-#include "../include/process.h"
-#include "../include/processor.h"
+#include "process.h"
+#include "processor.h"
 
-const char * processorStateToString(const enum ProcessorState state) {
-    switch (state) {
-        case EXECUTING: return "Processor Executing";
-        case PROCESSOR_FAILED: return "Processor Failed";
-        case PROCESSOR_IS_NULL: return "Processor is NULL";
-        case PROCESSOR_MEMORY_ALLOCATION_FAILED: return "Processor Memory Allocation Failed";
-        default: return "Unknown ProcessorState";
-    }
-}
-
-Processor * createProcessor (const unsigned int id) {
-    Processor * processor = (Processor *) malloc(sizeof(Processor));
-    if (processor == NULL) {
-        printf("%s\n", processorStateToString(PROCESSOR_MEMORY_ALLOCATION_FAILED));
-        exit(0);
-    }
-    processor->id = id;
-    processor->cycles = 0;
-    return processor;
-}
-
-enum ProcessState randomProcessState () {
+/*=== Processor Helper Functions ===*/
+ProcessState  random_process_state() {
     srand(time(NULL));
     const int outcome = rand() % 100 + 1;
     if (outcome < 33) return PROCESS_READY;
@@ -36,14 +17,58 @@ enum ProcessState randomProcessState () {
     else return PROCESS_WAITING;
 }
 
-Process * execute (Processor * processor, Process * process) {
+/*=== ProcessorState Enum and Functions ===*/
+
+// ProcessorState: Creation Functions:
+// NONE
+// ProcessorState: Destruction Functions:
+// NONE
+// ProcessorState: Mutator Functions:
+// NONE
+// ProcessorState: Accessor Functions:
+// NONE
+// ProcessorState: ToString Functions:
+const char * processor_state_to_string(const enum ProcessorState processor_state) {
+    switch (processor_state) {
+        case PROCESSOR_EXECUTING: return "Processor Executing";
+        case PROCESSOR_FAILED: return "Processor Failed";
+        case PROCESSOR_IS_NULL: return "Processor is NULL";
+        case PROCESSOR_MEMORY_ALLOCATION_FAILED: return "Processor Memory Allocation Failed";
+        default: return "Unknown ProcessorState";
+    }
+}
+
+/*=== The Process Data Type and Functions ===*/
+
+// ProcessorState: Creation Functions:
+Processor * create_processor (const unsigned int id) {
+    Processor * processor = (Processor *) malloc(sizeof(Processor));
     if (processor == NULL) {
-        printf("%s\n", processorStateToString(PROCESSOR_IS_NULL));
-        return NULL;
+        printf("%s\n", processor_state_to_string(PROCESSOR_MEMORY_ALLOCATION_FAILED));
+        exit(0);
+    }
+    processor->id = id;
+    processor->cycles = 0;
+    return processor;
+}
+
+// Processor: Destruction Functions:
+void destroy_processor (void * processor) { free(processor); }
+
+// Processor: Mutator Functions:
+// NONE
+// Processor: Accessor Functions:
+// NONE
+
+// Processor: Boolean Functions:
+bool execute_process (Processor * processor, Process * process) {
+    if (processor == NULL) {
+        printf("%s\n", processor_state_to_string(PROCESSOR_IS_NULL));
+        return false;
     }
     if (process == NULL) {
         printf("%s\n", process_state_to_string(PROCESS_IS_NULL));
-        return NULL;
+        return false;
     }
     if (process->state == PROCESS_READY) {
         process->state = PROCESS_RUNNING;
@@ -54,8 +79,12 @@ Process * execute (Processor * processor, Process * process) {
     if (process->milliseconds_remaining == 0) {
         process->state = PROCESS_FINISHED;
         process->file = NULL;
+        free(process);
     } else {
-        process->state = randomProcessState();
+        process->state = random_process_state();
     }
-    return process;
+    return true;
 }
+
+// Processor: ToString Functions:
+// NONE
