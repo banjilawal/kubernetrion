@@ -18,8 +18,8 @@ cmake-build-*/
 !*.h
 
 # Allow source and header directories
-!/src/
-!/include/
+!src/
+!include/
 
 # Allow the CMakeLists.txt file
 !CMakeLists.txt
