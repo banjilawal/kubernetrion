@@ -11,20 +11,13 @@
 /*=== The ProcessQueue Data Type and its Functions ===*/
 
 typedef struct ProcessBTreeNode {
-    const char * name;
-    File * file;
-    unsigned int id;
-    unsigned int number_of_child_processes;
-    unsigned int priority;
-    unsigned int initial_queue_entry_time;
-    unsigned int milliseconds_remaining;
-    struct Process * parent;
-    struct Process * child;
-    ProcessState state;
+    Process *process;
+    struct ProcessBTreeNode *left_child;
+    struct ProcessBTreeNode *right_child;
 } ProcessBTreeNode;
 
 // ProcessBTreeNode: Destruction Functions:
-ProcessBTreeNode * create_process_b_tree_node(const Process * source);
+ProcessBTreeNode * create_process_b_tree_node(const Process * parent);
 
 // ProcessBTreeNode: Mutator Functions:
 void destroy_process_b_tree_node(const ProcessBTreeNode * process_b_tree_node);
