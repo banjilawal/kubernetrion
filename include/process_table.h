@@ -1,9 +1,16 @@
 //
-// Created by griot on 2/10/25.
+// Created by griot on 2/9/25.
 //
 
-#ifndef PROCESS_STATISTICS_H
-#define PROCESS_STATISTICS_H
+#pragma once
+#include <stddef.h>
+
+#include "file.h"
+#include "process.h"
+
+#ifndef PROCESS_TABLE
+#define PROCESS_TABLE
+
 
 /*=== The ProcessData Data Type and its Functions ===*/
 typedef struct ProcessData {
@@ -96,4 +103,4 @@ const char * process_table_to_string (ProcessTable * process_table);
 //    unsigned int oldestPID;
 //} ProcessStatistics;
 
-#endif //PROCESS_STATISTICS_H
+#endif //PROCESS_TABLE
