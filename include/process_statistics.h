@@ -2,12 +2,14 @@
 // Created by griot on 2/9/25.
 //
 
-#ifndef PROCESS_STATISTICS
-#define PROCESS_STATISTICS
+#pragma once
 #include <stddef.h>
 
 #include "file.h"
 #include "process.h"
+#ifndef PROCESS_STATISTICS
+#define PROCESS_STATISTICS
+
 
 typedef struct process_statistics {
 
@@ -42,7 +44,5 @@ typedef struct processStatistics {
     unsigned int averageCycleRuns;
     unsigned int oldestPID;
 } ProcessStatistics;
-
-
 
 #endif //PROCESS_STATISTICS

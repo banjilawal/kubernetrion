@@ -3,11 +3,10 @@
 //
 #pragma once
 
-#include <stdbool.h>
 #include "process.h"
 
-#ifndef QUEUE_H
-#define QUEUE_H
+#ifndef PROCESS_QUEUE_H
+#define PROCESS_QUEUE_H
 
 /*=== The ProcessQueueState Enum and its Functions ===*/
 typedef enum ProcessQueueState {
@@ -31,6 +30,8 @@ typedef enum ProcessQueueState {
 // ProcessQueue: ToString Function:
 // NONE
 
+/*=== The ProcessQueue Data Type and its Functions ===*/
+
 // ProcessQueueState: toString
 const char * process_queue_state_to_string(const ProcessQueueState process_queue_state);
 
@@ -42,19 +43,15 @@ typedef struct ProcessQueue {
 } ProcessQueue;
 
 // ProcessQueue: Creation functions:
-ProcessQueue* createProcessQueue();
+ProcessQueue* create_process_queue();
 
 // ProcessQueue: Destruction functions:
-// NONE
+void destroy_process_queue(ProcessQueue * process_queue);
 
 // ProcessQueue: Mutator functions:
-Process * pop_process_queue(ProcessQueue* process_queue);
 void clear_process_queue(ProcessQueue *queue);
-bool enqueue_process(ProcessQueue* process_queue, Process* process);
-Process* dequeue_process(ProcessQueue* process_queue);
-void enqueue_process_node(ProcessQueue* process_queue, ProcessNode * process_node);
-void delete_process_node(ProcessQueue* process_queue, const unsigned int process_id);
-Process * select_process_tree(const Process * source);
+bool join_process_queue(ProcessQueue* process_queue, Process* process);
+Process* exit_process_queue(ProcessQueue* process_queue);
 
 // ProcessQueue: Accessor functions:
 Process * find_process_by_id(const ProcessQueue* process_queue, const unsigned int process_id);
@@ -65,8 +62,7 @@ void print_process_queue(const ProcessQueue* process_queue);
 bool process_queue_is_empty(const ProcessQueue* process_queue);
 
 // ProcessQueue: ToString Functions
-const char * process_queue_to_string(const ProcessQueue* queue);
-
+const char * process_queue_to_string(const ProcessQueue* process_queue);
 
 /*=== The RoundRobinProcessQueue Data Type and Functions ===*/
 typedef struct RoundRobinProcessQueue {
@@ -103,4 +99,4 @@ Process * exit_priority_process_queue (const PriorityProcessQueue * priority_que
 // NONE
 // PriorityProcessQueue: ToString Functions:
 // NONE
-#endif //QUEUE_H
+#endif //PROCESS_QUEUE_H

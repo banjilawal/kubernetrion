@@ -1,7 +1,9 @@
 //
 // Created by banji on 12/10/2024.
 //
+#pragma once
 
+#include <stdbool.h>
 #include "file.h"
 
 #ifndef PROCESS_H
@@ -11,12 +13,6 @@
 #define MAX_PRIORITY 100
 #define MIN_PRIORITY 1
 #define PROCESS_STRING_SIZE 256
-
-//
-// Created by banji on 12/10/2024.
-//
-#pragma once
-#include <stdbool.h>
 
 /*=== ProcessState Enum and Functions ===*/
 typedef enum ProcessState {

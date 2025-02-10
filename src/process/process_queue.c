@@ -6,31 +6,6 @@
 #include <string.h>
 
 
-/*=== FileNodeDiscoveryState Enum and Functions ===*/
-typedef enum FileNodeDiscoveryState {UNDISCOVERED, DISCOVERED, PROCESSED} FileNodeDiscoveryState;
-
-/*=== The FileSearchMetrics Data Type and Functions ===*/
-typedef struct FileSearchMetrics {
-    FileNodeDiscoveryState state;
-    unsigned int startTime;
-    unsigned int finishTime;
-} FileSearchMetrics;
-
-// FileSearchMetric: Creation Functions
-FileSearchMetrics * initialize_file_search_metrics ();
-
-// FileSearchMetric: Destruction Functions:
-// NONE
-// FileSearchMetric: Mutator Functions:
-// NONE
-// FileSearchMetric: Accessor Functions:
-// NONE
-// FileSearchMetric: Boolean Functions:
-// NONE
-// FileSearchMetric: ToString Function:
-// NONE
-
-
 /*=== ProcessQueueState Enum and Functions ===*/
 // ProcessQueueState: Destruction Functions:
 // NONE
@@ -39,8 +14,6 @@ FileSearchMetrics * initialize_file_search_metrics ();
 // ProcessQueueState: Accessor Functions:
 // NONE
 // ProcessQueueState Boolean Functions:
-// NONE
-// ProcessQueue: ToString Function:
 // NONE
 
 // ProcessQueueState: toString
@@ -54,34 +27,10 @@ const char * process_queue_state_to_string(const enum ProcessQueueState process_
     }
 }
 
-/*=== The File Data Type and It's Functions ===*/
-typedef struct File {
-    FileDescriptor * descriptor;
-    FileSearchMetrics * search_metrics;
-    struct File * next;
-    struct File * previous;
-} File;
-
-
-
-// File: Destruction functions:
-void destroy_file (File * file);
-
-// File: Mutator Functions
-void set_file_name (File * file, const char * name);
-
-// File: Accessor Functions
-unsigned int get_file_id (const File * file);
-const char * get_file_name (const File * file);
-
-// File: Boolean Functions
-bool is_empty_file (const File * file);
-bool files_are_equal (const File * a, const File * b);
-
-
+/*=== The ProcessQueue Data Type and its Functions ===*/
 
 // ProcessQueue: Creation functions:
-ProcessQueue * createProcessQueue() {
+ProcessQueue * create_process_queue() {
     ProcessQueue *processQueue = (ProcessQueue *) malloc(sizeof(ProcessQueue));
     if (processQueue == NULL) {
         printf("Could not allocate memory for processQueue.\n");
@@ -94,28 +43,19 @@ ProcessQueue * createProcessQueue() {
     return processQueue;
 }
 
-Process * pop_process_queue(ProcessQueue *process_queue) {
-    if (process_queue == NULL) {
-        printf("%s\n", process_queue_state_to_string(PROCESS_QUEUE_IS_NULL));
-        return NULL;
-    }
-    if (process_queue_is_empty(process_queue)) {
-        printf("%s\n", process_queue_state_to_string(PROCESS_QUEUE_IS_EMPTY));
-        return NULL;
-    }
-    ProcessNode * node = process_queue->head;
-    node->next = NULL;
-    node->previous = NULL;
-    Process * process = process_queue->head->process;
-
-    process_queue->head = process_queue->head->next;
-    process_queue->size--;
-    if (process_queue->size == 0) { clear_process_queue(process_queue); }
-    free(node);
-    return process;
+// ProcessQueue: Destruction functions:
+void destroy_process_queue(ProcessQueue * process_queue) {
+  free(process_queue);
 }
 
-bool enqueue_process(ProcessQueue* process_queue, Process* process) {
+// ProcessQueue: Mutator functions:
+void clear_process_queue (ProcessQueue *queue) {
+    queue->size = 0;
+    queue->state = PROCESS_QUEUE_IS_EMPTY;
+    queue->head = queue->tail = NULL;
+}
+
+bool join_process_queue (ProcessQueue* process_queue, Process* process) {
     if (process_queue == NULL) {
         printf("%s\n", process_queue_state_to_string(PROCESS_QUEUE_IS_NULL));
         return false;
@@ -138,25 +78,28 @@ bool enqueue_process(ProcessQueue* process_queue, Process* process) {
     return true;
 }
 
-bool process_queue_is_empty(const ProcessQueue* queue) {
-    if (queue == NULL) {
+Process * exit_process_queue(ProcessQueue *process_queue) {
+    if (process_queue == NULL) {
         printf("%s\n", process_queue_state_to_string(PROCESS_QUEUE_IS_NULL));
-        return true;
+        return NULL;
     }
-    if (queue->state == PROCESS_QUEUE_IS_EMPTY || queue->size == 0 ||
-        queue->head->previous == queue->tail ||
-        queue->head == queue->tail && queue->tail == NULL
-    ) {
-        return true;
-    } else { return false; }
+    if (process_queue_is_empty(process_queue)) {
+        printf("%s\n", process_queue_state_to_string(PROCESS_QUEUE_IS_EMPTY));
+        return NULL;
+    }
+    ProcessNode * node = process_queue->head;
+    node->next = NULL;
+    node->previous = NULL;
+    Process * process = process_queue->head->process;
+
+    process_queue->head = process_queue->head->next;
+    process_queue->size--;
+    if (process_queue->size == 0) { clear_process_queue(process_queue); }
+    free(node);
+    return process;
 }
 
-void clear_process_queue(ProcessQueue *queue) {
-    queue->size = 0;
-    queue->state = PROCESS_QUEUE_IS_EMPTY;
-    queue->head = queue->tail = NULL;
-}
-
+// ProcessQueue: Accessor functions:
 Process * find_process_by_id(const ProcessQueue *process_queue, const unsigned int process_id) {
     if (process_queue == NULL) {
         printf("%s\n", process_queue_state_to_string(PROCESS_QUEUE_IS_NULL));
@@ -191,6 +134,41 @@ Process * find_process_by_name(const ProcessQueue *process_queue, const char * n
     return NULL;
 }
 
+void print_process_queue(const ProcessQueue *process_queue) {
+    if (process_queue == NULL) {
+        return;
+    }
+
+    const ProcessNode *cursor = process_queue->head;
+    int counter = 0;
+    while (cursor != NULL) {
+        printf("%d: ", counter);
+        const char * string = process_to_string(cursor->process);
+        if (string != NULL) {
+            printf("%s\n", string);
+            free((void *) string);
+        }
+        cursor = cursor->next;
+        counter++;
+    }
+    printf("QUEUE [address: %p, size: %d]\n", (void *)process_queue, process_queue->size);
+}
+
+// ProcessQueue: Boolean functions:
+bool process_queue_is_empty(const ProcessQueue* queue) {
+    if (queue == NULL) {
+        printf("%s\n", process_queue_state_to_string(PROCESS_QUEUE_IS_NULL));
+        return true;
+    }
+    if (queue->state == PROCESS_QUEUE_IS_EMPTY || queue->size == 0 ||
+        queue->head->previous == queue->tail ||
+        queue->head == queue->tail && queue->tail == NULL
+    ) {
+        return true;
+    } else { return false; }
+}
+
+// ProcessQueue: ToString Functions
 const char * process_queue_to_string(const ProcessQueue * queue) {
     if (queue == NULL) {
         printf("%s\n", process_queue_state_to_string(PROCESS_QUEUE_IS_NULL));
@@ -226,25 +204,7 @@ const char * process_queue_to_string(const ProcessQueue * queue) {
 }
 
 /** Prints the entire process process_queue */
-void print_process_queue(const ProcessQueue *process_queue) {
-    if (process_queue == NULL) {
-        return;
-    }
 
-    const ProcessNode *cursor = process_queue->head;
-    int counter = 0;
-    while (cursor != NULL) {
-        printf("%d: ", counter);
-        const char * string = process_to_string(cursor->process);
-        if (string != NULL) {
-            printf("%s\n", string);
-            free((void *) string);
-        }
-        cursor = cursor->next;
-        counter++;
-    }
-    printf("QUEUE [address: %p, size: %d]\n", (void *)process_queue, process_queue->size);
-}
 
 /*=== The RoundRobinProcessQueue Data Type and Functions ===*/
 
