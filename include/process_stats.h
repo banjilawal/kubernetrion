@@ -139,13 +139,13 @@ typedef struct WaitingCyclesSummary {
 } WaitingCyclesSummary;
 
 // WaitingCyclesSummary: Creation Functions:
-WaitingCyclesSummary * get_wating_cycles_summary(const ProcessTable * process_table);
+WaitingCyclesSummary * get_waiting_cycles_summary(const ProcessTable * process_table);
 
 // WaitingCyclesSummary: Destruction Functions:
 void destroy_waiting_cycles_summary(WaitingCyclesSummary * waiting_cycles_summary);
 
 // WaitingCyclesSummary: ToString Function:
-const char * waiting_cycles_summary_to_string(const WaitingCyclesSummary * waiting_cycles_summary;
+const char * waiting_cycles_summary_to_string(const WaitingCyclesSummary * waiting_cycles_summary);
 
 /*=== The ReadsSummary Data Type and its Functions ===*/
 typedef struct ReadsSummary {

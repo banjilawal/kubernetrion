@@ -32,11 +32,11 @@ static const char * random_process_name () {
     return names[rand() % 127];
 }
 
-const static int random_int () {
+static int random_priority() {
     return (rand() % 100);
 }
 
-const static unsigned int random_milliseconds () {
+static unsigned int random_milliseconds() {
     return (rand() % (MAX_MILLISECONDS - MIN_MILLISECONDS)) + MIN_MILLISECONDS;
 }
 
@@ -44,10 +44,12 @@ static Process * random_process(Process * parent) {
     const char * name = random_process_name();
     const unsigned int id = nextId;
     nextId++;
-    const unsigned int priority = 1;
-    const unsigned int remainingMilliseconds = random_milliseconds();
-    File * file = NULL;
-    return create_process(name, file, id, priority, remainingMilliseconds, parent);
+    const unsigned int priority = random_priority();
+    const unsigned int milliseconds_remaining = random_milliseconds();
+    File * reading_file = NULL;
+    File * writing_file = NULL;
+    Process * child = NULL;
+    return create_process(id, name, parent, child, reading_file, writing_file, priority, milliseconds_remaining);
 }
 
 int main(void) {
