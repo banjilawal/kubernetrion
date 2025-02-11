@@ -7,7 +7,7 @@
 #include "../include/process.h"
 #include "../include/processor.h"
 
-const char * processorStateToString(const enum ProcessorState state) {
+const char * processor_state_to_string(const enum ProcessorState state) {
     switch (state) {
         case EXECUTING: return "Processor Executing";
         case PROCESSOR_FAILED: return "Processor Failed";
@@ -17,10 +17,10 @@ const char * processorStateToString(const enum ProcessorState state) {
     }
 }
 
-Processor * createProcessor (const unsigned int id) {
+Processor * create_processor (const unsigned int id) {
     Processor * processor = (Processor *) malloc(sizeof(Processor));
     if (processor == NULL) {
-        printf("%s\n", processorStateToString(PROCESSOR_MEMORY_ALLOCATION_FAILED));
+        printf("%s\n", processor_state_to_string(PROCESSOR_MEMORY_ALLOCATION_FAILED));
         exit(0);
     }
     processor->id = id;
@@ -28,7 +28,7 @@ Processor * createProcessor (const unsigned int id) {
     return processor;
 }
 
-enum ProcessState randomProcessState () {
+enum ProcessState random_process_state () {
     srand(time(NULL));
     const int outcome = rand() % 100 + 1;
     if (outcome < 15) return PROCESS_READY;
@@ -41,7 +41,7 @@ enum ProcessState randomProcessState () {
 
 Process * execute (Processor * processor, Process * process) {
     if (processor == NULL) {
-        printf("%s\n", processorStateToString(PROCESSOR_IS_NULL));
+        printf("%s\n", processor_state_to_string(PROCESSOR_IS_NULL));
         return NULL;
     }
     if (process == NULL) {
@@ -59,7 +59,7 @@ Process * execute (Processor * processor, Process * process) {
         process->reading_file = NULL;
         process->writing_file = NULL;
     } else {
-        process->state = randomProcessState();
+        process->state = random_process_state();
     }
     return process;
 }

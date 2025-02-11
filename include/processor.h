@@ -11,14 +11,15 @@ typedef enum ProcessorState {
     PROCESSOR_IS_NULL,
     PROCESSOR_MEMORY_ALLOCATION_FAILED
 } ProcessorErrorState;
-const char * processorStateToString(const enum ProcessorState state);
+const char * processor_state_to_string(const enum ProcessorState processor_state);
 
 typedef struct Processor {
     unsigned int id;
     unsigned int cycles;
 } Processor;
-Processor * createProcessor (const unsigned int id);
-Process *  execute (Processor * processor, Process * process);
-ProcessState randomProcessState ();
+Processor * create_processor (const unsigned int id);
+Process *  execute_process (Processor * processor, Process * process);
+
+ProcessState random_process_state ();
 
 #endif //PROCESSOR_H
