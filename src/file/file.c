@@ -128,7 +128,7 @@ void destroy_file (File * file) {
 }
 
 // File Mutator Functions
-void set_file_name (File * file, const char * name) { file->descriptor->name = name; }
+void set_file_name (File * file, const char * name) { file->descriptor->name = strdup(name); }
 
 // File: Accessor Functions
 unsigned int get_file_id (const File * file) { return file->descriptor->id; }
@@ -172,6 +172,15 @@ FileList * create_file_list (void) {
     fileList->size = 0;
     fileList->totalMegabytes = 0;
     return fileList;
+}
+
+// FileList: Destruction functions
+void destroy_file_list (FileList * file_list) {
+    if (file_list == NULL) return;
+    file_list->totalMegabytes = 0;
+    free(file_list->head);
+    free(file_list->tail);
+    free(file_list);
 }
 
 // FileList: Mutator Functions

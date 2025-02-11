@@ -1,12 +1,12 @@
 //
 // Created by griot on 2/10/25.
 //
-#pragma once
-
-#include "directory.h"
 
 #ifndef DIRECTORY_B_TREE_H
 #define DIRECTORY_B_TREE_H
+
+#pragma once
+#include "directory.h"
 
 /*=== The DirectoryBTreeNode Data Type and its Functions ===*/
 

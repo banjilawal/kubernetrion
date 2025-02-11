@@ -1,12 +1,12 @@
 //
 // Created by griot on 2/10/25.
 //
-#pragma once
-
-#include "process.h"
 
 #ifndef PROCESS_B_TREE_H
 #define PROCESS_B_TREE_H
+
+#pragma once
+#include "process.h"
 
 /*=== The ProcessQueue Data Type and its Functions ===*/
 

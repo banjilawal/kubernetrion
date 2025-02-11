@@ -188,7 +188,10 @@ const char * process_queue_to_string(const ProcessQueue * queue) {
     while (cursor != NULL) {
         const char * processString = process_to_string(cursor->process);
         if (processString != NULL) {
-            int bytesWritten = sprintf(queueString + strlen(queueString + PROCESS_STRING_SIZE + 64), "%d %s\n", counter, processString);
+            const int bytesWritten = sprintf(queueString
+                + strlen(queueString + PROCESS_STRING_SIZE + 64),
+                "%d %s\n", counter, processString
+            );
             if (bytesWritten < 0 || bytesWritten >= bufferSize) {
                 printf("Output exceeded queueString buffer size.\n");
                 free(queueString);
@@ -215,7 +218,7 @@ RoundRobinProcessQueue * create_round_robin_process_queue () {
         printf("%s\n", process_queue_state_to_string(PROCESS_QUEUE_IS_NULL));
         return NULL;
     }
-    roundRobin->queue = createProcessQueue();
+    roundRobin->queue = create_process_queue();
     return roundRobin;
 }
 
@@ -232,7 +235,7 @@ bool join_round_robin_process_queue (const RoundRobinProcessQueue * round_robin_
     printf("%s\n", process_state_to_string(PROCESS_IS_NULL));
     return false;
   }
-  enqueue_process(round_robin_queue->queue, process);
+  join_process_queue(round_robin_queue->queue, process);
   return true;
 }
 
@@ -245,7 +248,7 @@ Process * popRoundRobin (const RoundRobinProcessQueue * roundRobin) {
         printf("%s\n", process_queue_state_to_string(PROCESS_QUEUE_IS_EMPTY));
         return NULL;
     }
-    return pop_process_queue(roundRobin->queue);
+    return exit_process_queue(roundRobin->queue);
 }
 
 // RoundRobinProcessQueue: Accessor Functions:
@@ -264,7 +267,7 @@ PriorityProcessQueue * create_priority_process_queue () {
     printf("%s\n", process_queue_state_to_string(PROCESS_QUEUE_IS_NULL));
     return NULL;
   }
-  priorityQueue->queue = createProcessQueue();
+  priorityQueue->queue = create_process_queue();
   return priorityQueue;
 }
 
@@ -284,7 +287,7 @@ bool join_priority_process_queue (const PriorityProcessQueue * priority_queue, P
     return false;
   }
   if (process_queue_is_empty(priority_queue->queue) || priority_queue->queue->tail->process->priority >= process->priority) {
-    enqueue_process(priority_queue->queue, process);
+    join_process_queue(priority_queue->queue, process);
     return true;
   }
   ProcessNode * node = create_process_node(process);
@@ -320,7 +323,7 @@ Process * exit_priority_process_queue (const PriorityProcessQueue * priority_que
     printf("%s\n", process_queue_state_to_string(PROCESS_QUEUE_IS_EMPTY));
     return NULL;
   }
-  return pop_process_queue(priority_queue->queue);
+  return exit_process_queue(priority_queue->queue);
 }
 
 // PriorityProcessQueue: Accessor Functions:

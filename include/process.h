@@ -1,13 +1,14 @@
 //
 // Created by banji on 12/10/2024.
 //
-#pragma once
 
-#include <stdbool.h>
-#include "file.h"
 
 #ifndef PROCESS_H
 #define PROCESS_H
+
+#pragma once
+#include <stdbool.h>
+#include "file.h"
 
 #define NAME_LENGTH 64
 #define MAX_PRIORITY 100
@@ -18,8 +19,9 @@
 typedef enum ProcessState {
     PROCESS_READY,
     PROCESS_RUNNING,
-    PROCESS_BLOCKED,
-    PROCESS_WAITING,
+    PROCESS_READING_FILE_BLOCKED,
+    PROCESS_WRITING_FILE_BLOCKED,
+    PROCESS_WAITING_EVENT,
     PROCESS_FINISHED,
     PROCESS_IS_NULL,
     PROCESS_READING_FILE,
@@ -42,26 +44,29 @@ const char * process_state_to_string(const ProcessState process_state);
 
 /*=== The Process Data Type and Functions ===*/
 typedef struct Process {
-    const char * name;
-    File * file;
     unsigned int id;
-    unsigned int number_of_child_processes;
-    unsigned int priority;
-    unsigned int initial_queue_entry_time;
-    unsigned int milliseconds_remaining;
+    const char * name;
     struct Process * parent;
     struct Process * child;
+    File * reading_file;
+    File * writing_file;
+    unsigned int priority;
+    unsigned int number_of_child_processes;
+    unsigned int initial_queue_entry_time;
+    unsigned int milliseconds_remaining;
     ProcessState state;
 } Process;
 
 // Process: Creation Functions
 Process* create_process(
-    const char* name,
-    File* file,
-    unsigned int id,
-    unsigned int priority,
-    unsigned int milliseconds_remaining,
-    Process * parent
+    const unsigned int id,
+    const char * name,
+    struct Process * parent,
+    struct Process * child,
+    File * reading_file,
+    File * writing_file,
+    const unsigned int priority,
+    const unsigned int milliseconds_remaining
 );
 
 // Process: Destruction Functions:

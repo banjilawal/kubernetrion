@@ -53,11 +53,12 @@
 // ProcessState: toString Function
 const char * process_state_to_string(const ProcessState process_state) {
     switch (process_state) {
-        case PROCESS_READY: return "Ready";
-        case PROCESS_RUNNING: return "Running";
-        case PROCESS_BLOCKED: return "Blocked";
-        case PROCESS_WAITING: return "Waiting";
-        case PROCESS_FINISHED: return "Finished";
+        case PROCESS_READY: return "Process is ready";
+        case PROCESS_RUNNING: return "Process is running";
+        case PROCESS_READING_FILE_BLOCKED: return "Reading file blocked";
+        case PROCESS_WRITING_FILE_BLOCKED: return "Writing blocked";
+        case PROCESS_WAITING_EVENT: return "Process is waiting event";
+        case PROCESS_FINISHED: return "Process is finished";
         case PROCESS_IS_NULL: return "Process is NULL!";
         case PROCESS_READING_FILE: return "Process is reading file";
         case PROCESS_WRITING_FILE: return "Process is writing file";
@@ -70,28 +71,33 @@ const char * process_state_to_string(const ProcessState process_state) {
 
 // Process: Creation Functions
 Process * create_process(
-    const char * name,
-    File * file,
     const unsigned int id,
+    const char * name,
+    struct Process * parent,
+    struct Process * child,
+    File * reading_file,
+    File * writing_file,
     const unsigned int priority,
-    const unsigned int milliseconds_remaining,
-    Process * parent
+    const unsigned int milliseconds_remaining
 ) {
     Process * process = (Process *) malloc(sizeof(Process));
     if (process == NULL) {
         printf("%s\n", process_state_to_string(PROCESS_MEMORY_ALLOCATION_FAILED));
         return NULL;
     }
-    process->parent = parent;
+
     process->id = id;
     process->name = strdup(name);
+    process->parent = parent;
+    process->child = NULL;
+    process->reading_file = reading_file;
+    process->writing_file = writing_file;
     process->priority = priority;
     process->milliseconds_remaining = milliseconds_remaining;
-    process->file = file;
-    process->initial_queue_entry_time = 0;
-    process->child = NULL;
-    process->number_of_child_processes = 0;
 
+    process->initial_queue_entry_time = 0;
+    process->number_of_child_processes = 0;
+    ProcessState state;
     return process;
 }
 
@@ -99,7 +105,8 @@ Process * create_process(
 // Process: Destruction Functions:
 void destroy_process(Process * process) {
     if (process != NULL && process->child == NULL && process->number_of_child_processes == 0) {
-        process->file = NULL;
+        process->reading_file = NULL;
+        process->writing_file = NULL;
         process->parent = NULL;
         free((void *) process->name);
         free(process);
@@ -141,13 +148,13 @@ const char * process_to_string(const Process * process) {
     if (process->parent != NULL) { parentId = process->parent->id; }
 
     const char *format = "Process[address:%p, ParentID:%d ID:%d, Name:%s, State:%s, Priority:%d "
-                         "RemainingMilliseconds:%d, CPU Cycles:%d, File:%s]";
+                         "RemainingMilliseconds:%d, CPU Cycles:%d, Reading File:%s]";
     snprintf(
         string, bufferSize, format, (void *)process, parentId, process->id, process->name,
         process_state_to_string(process->state),
         process->priority, process->milliseconds_remaining,
         process->initial_queue_entry_time,
-        (process->file != NULL && process->file->descriptor != NULL) ? process->file->descriptor->name : "NULL"
+        (process->reading_file != NULL && process->reading_file->descriptor != NULL) ? process->reading_file->descriptor->name : "NULL"
     );
     return string;
 }

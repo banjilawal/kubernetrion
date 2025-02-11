@@ -1,11 +1,14 @@
 //
 // Created by banji on 12/10/2024.
 //
-#pragma once
-#include <stdbool.h>
+
 
 #ifndef FILE_H
 #define FILE_H
+
+#pragma once
+#include <stdbool.h>
+
 #define MAX_NAME_LENGTH 20
 
 #define FILE_ID_EXISTS_ERROR_CODE 1010
@@ -122,7 +125,7 @@ typedef struct FileList {
 FileList * create_file_list (void);
 
 // FileList: Destruction functions:
-void destroy_file_list (FileList * file_list);
+void destroy_file_list(FileList * file_list);
 
 // FileList: Mutator Functions
 bool add_to_file_list (FileList * file_list, File * file);
