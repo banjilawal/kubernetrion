@@ -36,7 +36,7 @@ enum ProcessState random_process_state () {
     else if (outcome < 45) return PROCESS_WRITING_FILE_BLOCKED;
     else if (outcome < 60) return PROCESS_READING_FILE_BLOCKED;
     else if (outcome < 75) return PROCESS_READING_FILE;
-    else return PROCESS_WRITING_TO_FILE;
+    else return PROCESS_WRITING_FILE;
 }
 
 Process * execute (Processor * processor, Process * process) {

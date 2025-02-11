@@ -1,0 +1,32 @@
+//
+// Created by griot on 2/11/25.
+//
+
+#ifndef PROCESS_GENERATOR_H
+#define PROCESS_GENERATOR_H
+
+//
+// Created by griot on 1/31/25.
+//
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+#include "process.h"
+
+#define MAX_MILLISECONDS 20
+#define MIN_MILLISECONDS 5
+
+// unsigned int STARTING_PROCESS_NUMBER = 0;
+// unsigned int nextId = 1;
+
+const char * random_process_name ();
+
+int random_priority();
+
+unsigned int random_milliseconds();
+
+Process * random_process(Process * parent);
+
+#endif //PROCESS_GENERATOR_H

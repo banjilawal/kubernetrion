@@ -7,6 +7,7 @@
 #include <time.h>
 
 #include "process.h"
+#include "process_generator.h"
 
 #define MAX_MILLISECONDS 20
 #define MIN_MILLISECONDS 5
@@ -14,7 +15,7 @@
 unsigned int STARTING_PROCESS_NUMBER = 0;
 unsigned int nextId = 1;
 
-static const char * random_process_name () {
+const char * random_process_name () {
     const char *names[128] = {
         "explorer.exe", "svchost.exe", "cmd.exe", "notepad.exe", "chrome.exe", "msedge.exe", "firefox.exe", "powershell.exe",
         "winlogon.exe", "csrss.exe","lsass.exe", "taskhost.exe", "dwm.exe", "rundll32.exe", "services.exe","smss.exe",
@@ -32,15 +33,15 @@ static const char * random_process_name () {
     return names[rand() % 127];
 }
 
-static int random_priority() {
+int random_priority() {
     return (rand() % 100);
 }
 
-static unsigned int random_milliseconds() {
+unsigned int random_milliseconds() {
     return (rand() % (MAX_MILLISECONDS - MIN_MILLISECONDS)) + MIN_MILLISECONDS;
 }
 
-static Process * random_process(Process * parent) {
+Process * random_process(Process * parent) {
     const char * name = random_process_name();
     const unsigned int id = nextId;
     nextId++;
@@ -52,14 +53,14 @@ static Process * random_process(Process * parent) {
     return create_process(id, name, parent, child, reading_file, writing_file, priority, milliseconds_remaining);
 }
 
-int main(void) {
-    srand(time(NULL));
-    Process * parent = random_process(NULL);
-    Process * child = random_process(parent);
-    printf("generated process:%s\n", process_to_string(parent));
-    printf("generated process:%s\n", process_to_string(child));
-
-    free(child);
-    free(parent);
-    return 0;
-}
+// int main(void) {
+//     srand(time(NULL));
+//     Process * parent = random_process(NULL);
+//     Process * child = random_process(parent);
+//     printf("generated process:%s\n", process_to_string(parent));
+//     printf("generated process:%s\n", process_to_string(child));
+//
+//     free(child);
+//     free(parent);
+//     return 0;
+// }
