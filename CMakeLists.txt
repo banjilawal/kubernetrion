@@ -20,5 +20,6 @@ add_executable(kubernetrion
         include/process_queue.h
         include/process_queue.h
         include/file_b_tree.h
-        include/process_statistics.h
+        include/process_stats.h
+        include/process_table.h
 )

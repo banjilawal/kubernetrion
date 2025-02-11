@@ -1,14 +1,14 @@
 //
 // Created by griot on 2/10/25.
 //
+
+#ifndef FILE_B_TREE_H
+#define FILE_B_TREE_H
+
 #pragma once
 #include "file.h"
 #include <stdbool.h>
 #include <stdio.h>
-
-
-#ifndef FILE_B_TREE_H
-#define FILE_B_TREE_H
 
 /*=== The FileBTreeNode Data Type and its Functions ===*/
 

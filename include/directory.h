@@ -1,12 +1,14 @@
 //
 // Created by banji on 12/10/2024.
 //
-#pragma once
-#include "file.h"
-#include <stdbool.h>
 
 #ifndef DIRECTORY_H
 #define DIRECTORY_H
+
+#pragma once
+#include <stdbool.h>
+#include "file.h"
+
 #define MAX_SUB_DIRECTORIES 100
 
 #define NULL_DIRECTORY_ERROR_CODE 4040

@@ -1,11 +1,14 @@
 //
 // Created by banji on 12/10/2024.
 //
-#pragma once
-#include <stdbool.h>
+
 
 #ifndef FILE_H
 #define FILE_H
+
+#pragma once
+#include <stdbool.h>
+
 #define MAX_NAME_LENGTH 20
 
 #define FILE_ID_EXISTS_ERROR_CODE 1010

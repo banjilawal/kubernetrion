@@ -32,8 +32,8 @@ enum ProcessState randomProcessState () {
     srand(time(NULL));
     const int outcome = rand() % 100 + 1;
     if (outcome < 33) return PROCESS_READY;
-    else if (outcome >= 33 && outcome < 66) return PROCESS_BLOCKED;
-    else return PROCESS_WAITING;
+    else if (outcome >= 33 && outcome < 66) return PROCESS_READING_FILE_BLOCKED;
+    else return PROCESS_WAITING_EVENT;
 }
 
 Process * execute (Processor * processor, Process * process) {

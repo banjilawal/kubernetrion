@@ -1,12 +1,12 @@
 //
 // Created by banji on 1/25/2025.
 //
-#pragma once
-
-#include "process.h"
 
 #ifndef PROCESS_QUEUE_H
 #define PROCESS_QUEUE_H
+
+#pragma once
+#include "process.h"
 
 /*=== The ProcessQueueState Enum and its Functions ===*/
 typedef enum ProcessQueueState {
