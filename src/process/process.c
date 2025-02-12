@@ -73,7 +73,7 @@ Process * create_process(
         return NULL;
     }
 
-    process->id = id;
+    *((unsigned int *)&process->id) = id;  // Only allowed during initialization
     process->name = (name == NULL) ? strdup("Unnamed Process") : strdup(name);
 
     process->child = NULL;
@@ -88,16 +88,12 @@ Process * create_process(
     return process;
 }
 
-
-
-
 // Process: Destruction Functions:
 void destroy_process(Process * process) {
     if (process == NULL) return;
     destroy_process(process->child);
     unset_reading_file(process);
     unset_writing_file(process);
-    free(process->name);
     free(process);
 }
 
@@ -217,56 +213,27 @@ ProcessNode * create_process_node(Process * process) {
         printf("%s cannot create a node for a null process\n", process_state_to_string(PROCESS_IS_NULL));
         return NULL;
     }
-    ProcessNode *new_node = (ProcessNode *) malloc(sizeof(ProcessNode));
-    if (new_node == NULL) {
-        printf("%s for processId:%d\n", process_node_to_string(PROCESS_NODE_MEMORY_ALLOCATION_FAILED), process->id);
-        return NULL;
-    }
-    new_node->process = process;
-    new_node->next = NULL;
-    new_node->previous = NULL;
-    return new_node;
-        printf("%s.\n", process_node_to_string(PROCESS_NODE_MEMORY_ALLOCATION_FAILED));
-        return NULL;
-    }
 
-    ProcessNode * processNode = malloc(sizeof(ProcessNode));
-    if (processNode == NULL) {
-        printf("%s for processId:%d\n", process_node_to_string(PROCESS_NODE_MEMORY_ALLOCATION_FAILED), process->id);
+    ProcessNode * process_node = (ProcessNode *) malloc(sizeof(ProcessNode));
+    if (process_node == NULL) {
+        printf("%s for processId:%d\n", process_node_state_to_string(PROCESS_NODE_MEMORY_ALLOCATION_FAILED), process->id);
         return NULL;
     }
-    processNode->process = process;
-    processNode->next = NULL;
-    processNode->previous = NULL;
-    return processNode;
+    process_node->process = process;
+    process_node->next = NULL;
+    process_node->previous = NULL;
 }
 
 // ProcessNode: Destruction functions:
 void destroy_process_node(ProcessNode * process_node) {
-    if (process_node != NULL) return;
+    if (process_node == NULL) return;
 
-    destroy_process(process_node->next);
-    destroy_process(process_node->previous);
+    ProcessNode * next = process_node->next;
+    ProcessNode * previous = process_node->previous;
+
+    next->previous = NULL;
+    previous->next = NULL;
 
     destroy_process(process_node->process);
     free(process_node);
 }
-
-// ProcessNode: Mutator Functions:
-// NONE
-// ProcessNode: Accessor Functions:
-// NONE
-// ProcessNode: Boolean Functions:
-// NONE
-
-// ProcessNode: ToString Function:
-const char * process_node_to_string(const ProcessNodeState process_node_state) {
-    switch (process_node_state) {
-        case PROCESS_NODE_IS_NULL: return "ProcessNode is NULL!";
-        case PROCESS_NODE_MEMORY_ALLOCATION_FAILED: return "ProcessNode memory allocation failed!";
-        default: return "Unknown ProcessNode process_node_state!";
-    }
-}
-
-
-

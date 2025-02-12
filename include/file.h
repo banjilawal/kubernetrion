@@ -9,7 +9,8 @@
 #pragma once
 #include <stdbool.h>
 
-#include "process.h"
+// Forward declaration of Process
+typedef struct Process Process;
 
 #define MAX_NAME_LENGTH 20
 
@@ -71,7 +72,7 @@ typedef struct File {
 } File;
 
 // File: Creation functions:
-File * create_file (char * name, unsigned int id, unsigned int megabytes, Process * writer);
+File * create_file (const unsigned int id, const char * name, const unsigned int megabytes, Process * writer);
 
 // File: Destruction functions:
 void destroy_file (File * file);
@@ -113,7 +114,7 @@ File * pop_from_file_list (FileList * file_list, const unsigned int file_id);
 // FileList: Accessor Functions
 File * file_list_name_search (const FileList * file_list, const char * name);
 File * file_list_id_search (const FileList * file_list, const unsigned int file_id);
-void print_file_list (const FileList * fileList);
+void print_file_list (const FileList * file_list);
 
 // FileList: Boolean Functions
 bool is_empty_file_list (const FileList * file_list);

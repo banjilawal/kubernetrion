@@ -4,6 +4,7 @@
  #include <time.h>
  #include <unistd.h>
 
+#include "process.h"
 #include "process_queue.h"
 #include "process_generator.h"
 
@@ -23,7 +24,7 @@ int main(void) {
         Process * process = random_process(NULL);
         // printf("name:%s ID:%d\n", process->name, process->id);
         process_to_string(process);
-        join_process_queue(process_queue, process);
+        enter_process_queue(process_queue, process);
         // if (i % 6 == 0) { parent = process; }
     }
     // print_process_queue(process_queue);

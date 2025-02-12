@@ -1,9 +1,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "process_queue.h"
 
-#include <string.h>
+
 
 
 /*=== ProcessQueueState Enum and Functions ===*/
@@ -47,7 +48,7 @@ void clear_process_queue (ProcessQueue *queue) {
     queue->head = queue->tail = NULL;
 }
 
-bool join_process_queue (ProcessQueue* process_queue, Process* process) {
+bool enter_process_queue (ProcessQueue* process_queue, Process* process) {
     if (process_queue == NULL) {
         printf("%s\n", process_queue_state_to_string(PROCESS_QUEUE_IS_NULL));
         return false;
@@ -153,49 +154,47 @@ bool process_queue_is_empty(const ProcessQueue* queue) {
         return true;
     }
     if (queue->state == PROCESS_QUEUE_IS_EMPTY || queue->size == 0 ||
-        queue->head->previous == queue->tail ||
-        queue->head == queue->tail && queue->tail == NULL
-    ) {
-        return true;
-    } else { return false; }
+        queue->head->previous == queue->tail || queue->head == queue->tail && queue->tail == NULL
+    ) { return true; }
+    return false;
 }
 
 // ProcessQueue: ToString Functions
-const char * process_queue_to_string(const ProcessQueue * queue) {
-    if (queue == NULL) {
+const char * process_queue_to_string(const ProcessQueue * process_queue) {
+    if (process_queue == NULL) {
         printf("%s\n", process_queue_state_to_string(PROCESS_QUEUE_IS_NULL));
         return NULL;
     }
 
-    const int bufferSize = (queue->size * PROCESS_STRING_SIZE) + 64;
-    char * queueString = (char *) malloc(bufferSize);
-    if (queueString == NULL) {
+    const int buffer_size = (process_queue->size * PROCESS_STRING_SIZE) + 64;
+    char * queue_string = (char *) malloc(buffer_size);
+    if (queue_string == NULL) {
         printf("Could not allocate memory for process_to_string.\n");
         return NULL;
     }
-    queueString[0] = '\0';
+    queue_string[0] = '\0';
 
-    const ProcessNode * cursor = queue->head;
+    const ProcessNode * cursor = process_queue->head;
     int counter = 0;
     while (cursor != NULL) {
-        const char * processString = process_to_string(cursor->process);
-        if (processString != NULL) {
-            const int bytesWritten = sprintf(queueString
-                + strlen(queueString + PROCESS_STRING_SIZE + 64),
-                "%d %s\n", counter, processString
+        const char * process_string = process_to_string(cursor->process);
+        if (process_string != NULL) {
+            const int bytes_written = sprintf(queue_string
+                + strlen(queue_string + PROCESS_STRING_SIZE + 64),
+                "%d %s\n", counter, process_string
             );
-            if (bytesWritten < 0 || bytesWritten >= bufferSize) {
+            if (bytes_written < 0 || bytes_written >= buffer_size) {
                 printf("Output exceeded queueString buffer size.\n");
-                free(queueString);
+                free(queue_string);
                 return NULL;
             }
-            free((void *) processString);
+            free((void *) process_string);
         }
         cursor = cursor->next;
         counter++;
     }
-    sprintf((queueString + 128), "\nqueue size:%d\n", queue->size);
-    return queueString;
+    sprintf((queue_string + 128), "\nqueue size:%d\n", process_queue->size);
+    return queue_string;
 }
 
 /** Prints the entire process process_queue */
@@ -205,7 +204,7 @@ const char * process_queue_to_string(const ProcessQueue * queue) {
 
 // RoundRobinProcessQueue: Creation Functions
 RoundRobinProcessQueue * create_round_robin_process_queue () {
-    RoundRobinProcessQueue * roundRobin = (RoundRobinProcessQueue *) malloc(sizeof(RoundRobinProcessQueue *));
+    RoundRobinProcessQueue * roundRobin = malloc(sizeof(RoundRobinProcessQueue *));
     if (roundRobin == NULL) {
         printf("%s\n", process_queue_state_to_string(PROCESS_QUEUE_IS_NULL));
         return NULL;
@@ -215,10 +214,14 @@ RoundRobinProcessQueue * create_round_robin_process_queue () {
 }
 
 // RoundRobinProcessQueue: Destruction Functions:
-// NONE
+void destroy_round_robin_process_queue(RoundRobinProcessQueue * round_robin_queue) {
+    if (round_robin_queue == NULL) return;
+    destroy_process_queue(round_robin_queue->queue);
+    free(round_robin_queue);
+}
 
 // RoundRobinProcessQueue: Mutator Functions:
-bool join_round_robin_process_queue (const RoundRobinProcessQueue * round_robin_queue, Process * process) {
+bool enter_round_robin_process_queue (const RoundRobinProcessQueue * round_robin_queue, Process * process) {
   if (round_robin_queue == NULL || process_queue_is_empty(round_robin_queue->queue)) {
     printf("%s\n", process_queue_state_to_string(PROCESS_QUEUE_IS_NULL));
     return false;
@@ -227,20 +230,20 @@ bool join_round_robin_process_queue (const RoundRobinProcessQueue * round_robin_
     printf("%s\n", process_state_to_string(PROCESS_IS_NULL));
     return false;
   }
-  join_process_queue(round_robin_queue->queue, process);
+  enter_process_queue(round_robin_queue->queue, process);
   return true;
 }
 
-Process * popRoundRobin (const RoundRobinProcessQueue * roundRobin) {
-    if (roundRobin == NULL || roundRobin->queue == NULL) {
+Process * exit_round_robin_queue (const RoundRobinProcessQueue * round_robin_queue) {
+    if (round_robin_queue == NULL || round_robin_queue->queue == NULL) {
         printf("%s\n", process_queue_state_to_string(PROCESS_QUEUE_IS_NULL));
         return NULL;
     }
-    if (roundRobin->queue->state == PROCESS_QUEUE_IS_EMPTY) {
+    if (round_robin_queue->queue->state == PROCESS_QUEUE_IS_EMPTY) {
         printf("%s\n", process_queue_state_to_string(PROCESS_QUEUE_IS_EMPTY));
         return NULL;
     }
-    return exit_process_queue(roundRobin->queue);
+    return exit_process_queue(round_robin_queue->queue);
 }
 
 // RoundRobinProcessQueue: Accessor Functions:
@@ -279,17 +282,18 @@ bool join_priority_process_queue (const PriorityProcessQueue * priority_queue, P
     return false;
   }
   if (process_queue_is_empty(priority_queue->queue) || priority_queue->queue->tail->process->priority >= process->priority) {
-    join_process_queue(priority_queue->queue, process);
+    enter_process_queue(priority_queue->queue, process);
     return true;
   }
+
   ProcessNode * node = create_process_node(process);
   if (node == NULL) {
-    printf("%s\n", process_node_to_string(PROCESS_NODE_IS_NULL));
+    printf("%s\n", process_node_state_to_string(PROCESS_NODE_IS_NULL));
     return false;
   }
   ProcessNode * cursor = priority_queue->queue->tail;
   if (cursor == NULL) {
-    printf("%s\n", process_node_to_string(PROCESS_NODE_IS_NULL));
+    printf("%s\n", process_node_state_to_string(PROCESS_NODE_IS_NULL));
     return false;
   }
   while (cursor != NULL) {

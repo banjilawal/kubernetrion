@@ -18,7 +18,7 @@ Directory * create_directory (Directory * parent, char * name, unsigned int id) 
         printf("Cannot allocate memory to create_directory()");
         exit(0);
     }
-    directory->details = create_file(name, id, 0);
+    directory->details = create_file(id, name, 0, NULL);
     directory->files = create_file_list();
     directory->parent = parent;
     directory->children = (Directory * *) malloc(sizeof(Directory * ) * (MAX_SUB_DIRECTORIES));

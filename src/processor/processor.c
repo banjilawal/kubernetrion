@@ -28,7 +28,7 @@ Processor * create_processor (const unsigned int id) {
     return processor;
 }
 
-ProcessState get_random_process_state () {
+ProcessState random_process_state () {
     srand(time(NULL));
     const int outcome = rand() % 100 + 1;
     if (outcome < 15) return PROCESS_READY;

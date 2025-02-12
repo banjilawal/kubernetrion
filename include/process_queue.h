@@ -50,7 +50,7 @@ void destroy_process_queue(ProcessQueue * process_queue);
 
 // ProcessQueue: Mutator functions:
 void clear_process_queue(ProcessQueue *queue);
-bool join_process_queue(ProcessQueue* process_queue, Process* process);
+bool enter_process_queue(ProcessQueue* process_queue, Process* process);
 Process* exit_process_queue(ProcessQueue* process_queue);
 
 // ProcessQueue: Accessor functions:
@@ -75,7 +75,7 @@ RoundRobinProcessQueue * create_round_robin_process_queue ();
 // RoundRobinProcessQueue: DestructionFunctions
 
 // RoundRobinProcessQueue: Mutator Functions
-bool join_round_robin_process_queue (const RoundRobinProcessQueue * round_robin_queue, Process * process);
+bool enter_round_robin_process_queue (const RoundRobinProcessQueue * round_robin_queue, Process * process);
 Process * exit_round_robin_process_queue (const RoundRobinProcessQueue * roundRobin);
 
 /*=== The PriorityProcessQueue Data Type and its Functions ===*/

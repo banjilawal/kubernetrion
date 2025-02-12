@@ -76,30 +76,34 @@ bool files_descriptors_are_equal (const FileDescriptor * a, const FileDescriptor
     return a->id == b->id
         && strcmp(a->name, b->name) == 0
         && a->megabytes == b->megabytes
-        && a->state == b->state;
+        && strcmp(a->name, b->name) == 0;
 }
 
 /*=== The File Data Type and It's Functions ===*/
 
 // File: Creation functions
-File * create_file (char * name, unsigned int id, unsigned int megabytes) {
+File * create_file (const unsigned int id, const char * name, const unsigned int megabytes, Process * writer) {
     File * file = (File *) malloc(sizeof(File));
     if (file == NULL) {
-        printf("Cannot allocate memory to create_file()");
+        printf(file_state_to_string(FILE_DESCRIPTOR_MEMORY_ALLOCATION_FAILED));
         exit(0);
     }
     file->descriptor = create_file_descriptor(name, id, megabytes);
     file->next = NULL;
     file->previous = NULL;
+    file->writer = writer;
     return file;
 }
 
 // File: Destruction functions:
 void destroy_file (File * file) {
     if (file == NULL) return;
-    if (file->next == NULL && file->previous == NULL) {
-        destroy_file_descriptor(file->descriptor);
-    }
+    file->next->previous = file->previous;
+    file->previous->next = file->next;
+
+    file->next = NULL;
+    file->previous = NULL;
+    free(file);
 }
 
 // File Mutator Functions
@@ -121,9 +125,7 @@ bool is_empty_file (const File * file) {
 bool files_are_equal(const File * a, const File * b) {
     if ( &a == &b ) return true;
     if (a == NULL || b == NULL) return false;
-    return a->descriptor->id == b->descriptor->id
-        && a->descriptor->megabytes == b->descriptor->megabytes
-        && strcmp(a->descriptor->name, b->descriptor->name) == 0;
+    return files_descriptors_are_equal(a->descriptor, b->descriptor);
 }
 
 // File: ToString Function

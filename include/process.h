@@ -34,7 +34,7 @@ const char * process_state_to_string(const ProcessState process_state);
 
 /*=== The Process Data Type and Functions ===*/
 typedef struct Process {
-    unsigned int id;
+    const unsigned int id;
     const char * name;
     struct Process * parent;
     struct Process * child;
@@ -86,7 +86,7 @@ typedef enum ProcessNodeState {
 } ProcessNodeState;
 
 // ProcessNodeState: toString Function
-const char * process_node_to_string(const ProcessNodeState process_node_state);
+const char * process_node_state_to_string(const ProcessNodeState process_node_state);
 
 /*=== The ProcessNode Data Type and It's Functions ===*/
 typedef struct ProcessNode {
