@@ -13,10 +13,10 @@ const char * process_string_format = "Process["
     " name:%s"
     " state:%s"
     " priority:%d"
-    " millisecondsRemaining:%d"
+    " milliseconds_remaining:%d"
     " CPU Cycles:%d"
-    " Reading File:%s "
-    " Writing File:%s]";
+    " reading_file:%s "
+    " writing_file:%s]";
 
 void print_allocation_failure(const char *data_type) {
     printf("Memory allocation for %s failed!\n", data_type);
@@ -82,7 +82,7 @@ Process * create_process(
     process->priority = priority;
     process->milliseconds_remaining = milliseconds_remaining;
 
-    process->initial_queue_entry_time = 0;
+    process->number_of_queue_entries = 0;
     process->number_of_child_processes = 0;
     process->state = PROCESS_RUNNING;
     return process;
@@ -187,7 +187,7 @@ const char * process_to_string(const Process * process) {
         process_state_to_string(process->state),
         process->priority,
         process->milliseconds_remaining,
-        process->initial_queue_entry_time,
+        process->number_of_queue_entries,
         file_to_string(process->reading_file),
         file_to_string(process->writing_file)
     );

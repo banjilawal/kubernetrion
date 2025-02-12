@@ -42,7 +42,7 @@ typedef struct Process {
     File * writing_file;
     unsigned int priority;
     unsigned int number_of_child_processes;
-    unsigned int initial_queue_entry_time;
+    unsigned int number_of_queue_entries;
     unsigned int milliseconds_remaining;
     ProcessState state;
 } Process;

@@ -45,7 +45,7 @@ Process * execute (Processor * processor, Process * process) {
         process->milliseconds_remaining--;
     }
     processor->cycles++;
-    process->initial_queue_entry_time++;
+    process->number_of_queue_entries++;
     if (process->milliseconds_remaining == 0) {
         process->state = PROCESS_FINISHED;
         process->reading_file = NULL;
