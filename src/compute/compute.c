@@ -21,8 +21,8 @@ int main(void) {
     ProcessQueue * process_queue = create_process_queue();
     for (int i = 0; i < 32; i++) {
         Process * process = random_process(NULL);
-        printf("name:%s ID:%d\n", process->name, process->id);
-        // process_to_string(process);
+        // printf("name:%s ID:%d\n", process->name, process->id);
+        process_to_string(process);
         join_process_queue(process_queue, process);
         // if (i % 6 == 0) { parent = process; }
     }

@@ -6,49 +6,23 @@
 #include "process.h"
 
 
+const char * process_string_format = "Process["
+    " address:%p"
+    " parentId:%d"
+    " id:%d"
+    " name:%s"
+    " state:%s"
+    " priority:%d"
+    " millisecondsRemaining:%d"
+    " CPU Cycles:%d"
+    " Reading File:%s "
+    " Writing File:%s]";
 
-#ifndef PROCESS_H
-#define PROCESS_H
-
-#define NAME_LENGTH 64
-#define MAX_PRIORITY 100
-#define MIN_PRIORITY 1
-
-//
-// Created by banji on 12/10/2024.
-//
-#pragma once
-#include <stdbool.h>
-
-
-
-
-
-
-#endif //PROCESS_H
-
-// const char * errorStateToString(const enum ErrorState state) {
-//     switch (state) {
-//         case PROCESS_QUEUE_IS_NULL: return "Process queue is NULL!";
-//         case PROCESS_NODE_IS_NULL: return "Process queue node is NULL!";
-//         case PROCESS_IS_NULL: return "Process is NULL!";
-//         case PROCESS_QUEUE_IS_EMPTY: return "Process queue is empty!";
-//         default: return "Unknown error state!";
-//     }
-// }
-
+void print_allocation_failure(const char *data_type) {
+    printf("Memory allocation for %s failed!\n", data_type);
+}
 
 /*=== ProcessState Enum and Functions ===*/
-// ProcessState: Destruction Functions:
-// NONE
-// ProcessState: Mutator Functions:
-// NONE
-// ProcessState: Accessor Functions:
-// NONE
-// ProcessState: Boolean Functions:
-// NONE
-// ProcessState: ToString Function:
-// NONE
 
 // ProcessState: toString Function
 const char * process_state_to_string(const ProcessState process_state) {
@@ -63,7 +37,9 @@ const char * process_state_to_string(const ProcessState process_state) {
         case PROCESS_READING_FILE: return "Process is reading file";
         case PROCESS_WRITING_FILE: return "Process is writing file";
         case PROCESS_MEMORY_ALLOCATION_FAILED: return "Process memory allocation failed!";
-        default: return "Unknown process_state";
+        default:
+            printf("Unknown process state: %d\n", process_state);
+            return "Unknown process_state";
     }
 }
 
@@ -86,9 +62,20 @@ Process * create_process(
         return NULL;
     }
 
+    if (parent != NULL) {
+        parent->child = process;
+        process->parent = parent;
+    } else { process->parent = NULL; }
+
+    if (priority < MIN_PRIORITY || priority > MAX_PRIORITY) {
+        printf("Priority must be between %d and %d.\n", MIN_PRIORITY, MAX_PRIORITY);
+        free(process);
+        return NULL;
+    }
+
     process->id = id;
-    process->name = strdup(name);
-    process->parent = parent;
+    process->name = (name == NULL) ? strdup("Unnamed Process") : strdup(name);
+
     process->child = NULL;
     process->reading_file = reading_file;
     process->writing_file = writing_file;
@@ -97,38 +84,84 @@ Process * create_process(
 
     process->initial_queue_entry_time = 0;
     process->number_of_child_processes = 0;
-    ProcessState state;
+    process->state = PROCESS_RUNNING;
     return process;
 }
 
 
+
+
 // Process: Destruction Functions:
 void destroy_process(Process * process) {
-    if (process != NULL && process->child == NULL && process->number_of_child_processes == 0) {
-        process->reading_file = NULL;
-        process->writing_file = NULL;
-        process->parent = NULL;
-        free((void *) process->name);
-        free(process);
-    }
+    if (process == NULL) return;
+    destroy_process(process->child);
+    unset_reading_file(process);
+    unset_writing_file(process);
+    free(process->name);
+    free(process);
 }
 
 // Process: Mutator Functions:
-void remove_child_process(Process * parent, Process* child) {
-    if (parent != NULL && child != NULL && child->child == NULL) {
-        if (parent->child == child) {
-            child->parent = NULL;
-            parent->child = NULL;
-            parent->number_of_child_processes--;
-        }
+void set_reading_file(Process * process, File * file) {
+    if (process == NULL) return;
+    if (files_are_equal(process->reading_file, file)) return;
+    if (file->reader != NULL) {
+        printf("file %s is in use", file->descriptor->name);
+        return;
     }
+    process->reading_file = NULL;
+    if (file != NULL) {
+        process->reading_file = file;
+        file->reader = process;
+    }
+}
+
+void set_writing_file (Process * process, File * file) {
+    if (process == NULL) return;
+    if (files_are_equal(process->writing_file, file)) return;
+    if (file->writer != NULL) {
+        printf("file %s is in use", file->descriptor->name);
+        return;
+    }
+    process->writing_file = NULL;
+    if (file != NULL) {
+        process->writing_file = file;
+        file->writer = process;
+    }
+}
+
+File * unset_reading_file(Process * process) {
+    if (process == NULL) return NULL;
+    if (process->reading_file == NULL) return NULL;
+    File * file = process->reading_file;
+    process->reading_file = NULL;
+    file->reader = NULL;
+    return file;
+}
+
+File * unset_writing_file(Process * process) {
+    if (process == NULL) return NULL;
+    if (process->writing_file == NULL) return NULL;
+    File * file = process->writing_file;
+    process->writing_file = NULL;
+    return file;
+}
+
+void kill_child_process(Process * parent) {
+    if (parent == NULL) return;
+    if (parent->child == NULL) return;
+    destroy_process(parent->child);
 }
 
 // Process: Accessor Functions:
 unsigned int get_process_id(const Process * process) { return process->id; }
 
 // Process: Boolean Functions:
-bool processes_are_equal (const Process * a, const Process * b) { return (a == b || a->id == b->id); }
+bool processes_are_equal (const Process * a, const Process * b) {
+    if (&a == &b) return true;
+    if (a == NULL || b == NULL) return false;
+    return a->id == b->id && strcmp(a->name, b->name) == 0;
+}
 
 // Process: ToString Function:
 const char * process_to_string(const Process * process) {
@@ -147,32 +180,29 @@ const char * process_to_string(const Process * process) {
     unsigned int parentId = 0;
     if (process->parent != NULL) { parentId = process->parent->id; }
 
-    const char *format = "Process[address:%p, ParentID:%d ID:%d, Name:%s, State:%s, Priority:%d "
-                         "RemainingMilliseconds:%d, CPU Cycles:%d, Reading File:%s]";
     snprintf(
-        string, bufferSize, format, (void *)process, parentId, process->id, process->name,
+        string,
+        bufferSize,
+        process_string_format,
+        (void *) process,
+        parentId,
+        process->id,
+        process->name,
         process_state_to_string(process->state),
-        process->priority, process->milliseconds_remaining,
+        process->priority,
+        process->milliseconds_remaining,
         process->initial_queue_entry_time,
-        (process->reading_file != NULL && process->reading_file->descriptor != NULL) ? process->reading_file->descriptor->name : "NULL"
+        file_to_string(process->reading_file),
+        file_to_string(process->writing_file)
     );
     return string;
 }
 
 /*=== ProcessNodeState Enum and Functions ===*/
 
-// ProcessNodeState: Destruction Functions:
-// NONE
-// ProcessNodeState: Mutator Functions:
-// NONE
-// ProcessNodeState: Accessor Functions:
-// NONE
-// ProcessNodeState: Boolean Functions:
-// NONE
-
 // ProcessNodeState: ToString Function:
-const char * process_node_state_to_string(const ProcessNodeState process_node_state) {
-    switch (process_node_state) {
+const char * process_node_state_to_string(const ProcessNodeState state) {
+    switch (state) {
         case PROCESS_NODE_IS_NULL: return "ProcessNode is NULL!";
         case PROCESS_NODE_MEMORY_ALLOCATION_FAILED: return "ProcessNode memory allocation failed!";
         default: return "Unknown process_state";
@@ -183,32 +213,43 @@ const char * process_node_state_to_string(const ProcessNodeState process_node_st
 
 // ProcessNode: Creation functions:
 ProcessNode * create_process_node(Process * process) {
-    if (process == NULL) {
+    if (process == NULL || process->name == NULL) {
+        printf("%s cannot create a node for a null process\n", process_state_to_string(PROCESS_IS_NULL));
+        return NULL;
+    }
+    ProcessNode *new_node = (ProcessNode *) malloc(sizeof(ProcessNode));
+    if (new_node == NULL) {
+        printf("%s for processId:%d\n", process_node_to_string(PROCESS_NODE_MEMORY_ALLOCATION_FAILED), process->id);
+        return NULL;
+    }
+    new_node->process = process;
+    new_node->next = NULL;
+    new_node->previous = NULL;
+    return new_node;
         printf("%s.\n", process_node_to_string(PROCESS_NODE_MEMORY_ALLOCATION_FAILED));
         return NULL;
     }
 
-    ProcessNode * processQueueNode = (ProcessNode *) malloc(sizeof(ProcessNode));
-    if (processQueueNode == NULL) {
-        printf("%s\n", process_node_to_string(PROCESS_NODE_MEMORY_ALLOCATION_FAILED));
+    ProcessNode * processNode = malloc(sizeof(ProcessNode));
+    if (processNode == NULL) {
+        printf("%s for processId:%d\n", process_node_to_string(PROCESS_NODE_MEMORY_ALLOCATION_FAILED), process->id);
         return NULL;
     }
-    processQueueNode->process = process;
-    processQueueNode->next = NULL;
-    processQueueNode->previous = NULL;
-    return processQueueNode;
+    processNode->process = process;
+    processNode->next = NULL;
+    processNode->previous = NULL;
+    return processNode;
 }
 
 // ProcessNode: Destruction functions:
 void destroy_process_node(ProcessNode * process_node) {
     if (process_node != NULL) return;
-    if (process_node->next == NULL && process_node->previous == NULL) {
-        destroy_process_node(process_node->next);
-        free(process_node->next);
-        free(process_node->previous);
-        destroy_process(process_node->process);
-        free(process_node);
-    }
+
+    destroy_process(process_node->next);
+    destroy_process(process_node->previous);
+
+    destroy_process(process_node->process);
+    free(process_node);
 }
 
 // ProcessNode: Mutator Functions:

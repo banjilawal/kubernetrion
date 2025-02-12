@@ -9,6 +9,8 @@
 #pragma once
 #include <stdbool.h>
 
+#include "process.h"
+
 #define MAX_NAME_LENGTH 20
 
 #define FILE_ID_EXISTS_ERROR_CODE 1010
@@ -16,52 +18,30 @@
 #define NULL_FILE_ERROR_CODE 3030
 
 /*=== FileState Enum and Functions ===*/
+
+typedef enum FileOperation {
+    READ,
+    WRITE,
+    APPEND,
+    OVERWRITE,
+    RENAME
+} FileOperation;
+
 typedef enum FileState {
     PROCESS_READING_FROM_FILE,
     PROCESS_WRITING_TO_FILE,
     FILE_IS_CLOSED,
     FILE_IS_OPEN,
     FILE_IS_NULL,
+    FILE_DESCRIPTOR_IS_NULL,
+    FILE_DESCRIPTOR_MEMORY_ALLOCATION_FAILED,
     FILE_MEMORY_ALLOCATION_FAILED
 } FileState;
-// FileState: Destruction Functions:
-// NONE
-// FileState: Mutator Functions:
-// NONE
-// FileState: Accessor Functions:
-// NONE
-// FileState: Boolean Functions:
-// NONE
-// FileState: ToString Function:
-// NONE
 // FileState: toString
 const char * file_state_to_string (const enum FileState state);
 
-/*=== FileNodeDiscoveryState Enum and Functions ===*/
-typedef enum FileNodeDiscoveryState {UNDISCOVERED, DISCOVERED, PROCESSED} FileNodeDiscoveryState;
-
-/*=== The FileSearchMetrics Data Type and Functions ===*/
-typedef struct FileSearchMetrics {
-    FileNodeDiscoveryState state;
-    unsigned int startTime;
-    unsigned int finishTime;
-} FileSearchMetrics;
-
-// FileSearchMetric: Creation Functions
-FileSearchMetrics * initialize_file_search_metrics ();
-
-// FileSearchMetric: Destruction Functions:
-// NONE
-// FileSearchMetric: Mutator Functions:
-// NONE
-// FileSearchMetric: Accessor Functions:
-// NONE
-// FileSearchMetric: Boolean Functions:
-// NONE
-// FileSearchMetric: ToString Function:
-// NONE
-
 /*=== The FileDescriptor Data Type and Functions ===*/
+
 typedef struct FileDescriptor {
     char * name;
     unsigned int id;
@@ -70,37 +50,34 @@ typedef struct FileDescriptor {
 } FileDescriptor;
 
 // FileDescriptor: Creation Functions
-FileDescriptor * create_file_descriptor (char * name, unsigned int id, unsigned int megabytes);
+FileDescriptor * create_file_descriptor (const char * name, const unsigned int id, unsigned int megabytes);
 
 // FileDescriptor: Destruction Functions:
 void destroy_file_descriptor (FileDescriptor * file_descriptor);
 
-// FileDescriptor: Mutator Functions:
-// NONE
-// FileDescriptor: Accessor Functions:
-// NONE
 // FileDescriptor: Boolean Functions:
-// NONE
+bool files_descriptors_are_equal (const FileDescriptor * a, const FileDescriptor * b);
 
 // FileDescriptor: ToString Function:
-const char * file_descriptor_to_string (const FileDescriptor * fileMetadata);
+const char * file_descriptor_to_string (const FileDescriptor * file_descriptor);
 
-/*=== The File Data Type and It's Functions ===*/
+/*=== The File Data Type and Its Functions ===*/
 typedef struct File {
     FileDescriptor * descriptor;
-    FileSearchMetrics * search_metrics;
+    Process * reader;
+    Process * writer;
     struct File * next;
     struct File * previous;
 } File;
 
 // File: Creation functions:
-File * create_file (char * name, unsigned int id, unsigned int megabytes);
+File * create_file (char * name, unsigned int id, unsigned int megabytes, Process * writer);
 
 // File: Destruction functions:
 void destroy_file (File * file);
 
 // File: Mutator Functions
-void set_file_name (File * file, const char * name);
+void set_file_name (const File * file, const char * name);
 
 // File: Accessor Functions
 unsigned int get_file_id (const File * file);
@@ -114,6 +91,7 @@ bool files_are_equal (const File * a, const File * b);
 const char * file_to_string (const File * file);
 
 /*=== The FileList Data Type and It's Functions ===*/
+
 typedef struct FileList {
     File * head;
     File * tail;

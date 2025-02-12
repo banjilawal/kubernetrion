@@ -29,16 +29,6 @@ typedef enum ProcessState {
     PROCESS_MEMORY_ALLOCATION_FAILED
 } ProcessState;
 
-// ProcessState: Destruction Functions:
-// NONE
-// ProcessState: Mutator Functions:
-// NONE
-// ProcessState: Accessor Functions:
-// NONE
-// ProcessState: Boolean Functions:
-// NONE
-// ProcessState: ToString Function:
-// NONE
 // ProcessState: toString Function
 const char * process_state_to_string(const ProcessState process_state);
 
@@ -73,10 +63,15 @@ Process* create_process(
 void destroy_process(Process * process);
 
 // Process: Mutator Functions:
+File * unset_reading_file(Process * process);
+File * unset_writing_file(Process * process);
+void set_reading_file(Process * process, File * reading_file);
+void set_writing_file(Process * process, File * writing_file);
 void remove_child_process(Process * parent, Process * child);
 
 // Process: Accessor Functions:
 unsigned int get_process_id(const Process * process);
+const char * get_process_name(const Process * process);
 
 // Process: Boolean Functions:
 bool processes_are_equal(const Process * a, const Process * b);
@@ -90,18 +85,7 @@ typedef enum ProcessNodeState {
     PROCESS_NODE_MEMORY_ALLOCATION_FAILED
 } ProcessNodeState;
 
-// ProcessNodeState: Destruction Functions:
-// NONE
-// ProcessNodeState: Mutator Functions:
-// NONE
-// ProcessNodeState: Accessor Functions:
-// NONE
-// ProcessNodeState: Boolean Functions:
-// NONE
-// ProcessNodeState: ToString Function:
-// NONE
-
-// ProcessNOdeState: toString Function
+// ProcessNodeState: toString Function
 const char * process_node_to_string(const ProcessNodeState process_node_state);
 
 /*=== The ProcessNode Data Type and It's Functions ===*/
@@ -116,15 +100,5 @@ ProcessNode * create_process_node(Process * process);
 
 // ProcessNode: Destruction functions:
 void destroy_process_node(ProcessNode * process_node);
-
-// ProcessNode: Mutator Functions:
-// NONE
-// ProcessNode: Accessor Functions:
-// NONE
-// Process: Boolean Functions:
-// NONE
-
-// ProcessNode: ToString Function:
-// NONE
 
 #endif //PROCESS_H

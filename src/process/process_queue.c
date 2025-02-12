@@ -7,14 +7,6 @@
 
 
 /*=== ProcessQueueState Enum and Functions ===*/
-// ProcessQueueState: Destruction Functions:
-// NONE
-// ProcessQueueState: Mutator Functions:
-// NONE
-// ProcessQueueState: Accessor Functions:
-// NONE
-// ProcessQueueState Boolean Functions:
-// NONE
 
 // ProcessQueueState: toString
 const char * process_queue_state_to_string(const enum ProcessQueueState process_queue_state) {
@@ -31,16 +23,16 @@ const char * process_queue_state_to_string(const enum ProcessQueueState process_
 
 // ProcessQueue: Creation functions:
 ProcessQueue * create_process_queue() {
-    ProcessQueue *processQueue = (ProcessQueue *) malloc(sizeof(ProcessQueue));
-    if (processQueue == NULL) {
-        printf("Could not allocate memory for processQueue.\n");
+    ProcessQueue * process_queue = (ProcessQueue *) malloc(sizeof(ProcessQueue));
+    if (process_queue == NULL) {
+        printf("%s.\n", process_queue_state_to_string(PROCESS_QUEUE_MEMORY_ALLOCATION_FAILED));
         return NULL;
     }
-    processQueue->head = NULL;
-    processQueue->tail = NULL;
-    processQueue->size = 0;
-    processQueue->state = PROCESS_QUEUE_IS_EMPTY;
-    return processQueue;
+    process_queue->head = NULL;
+    process_queue->tail = NULL;
+    process_queue->size = 0;
+    process_queue->state = PROCESS_QUEUE_IS_EMPTY;
+    return process_queue;
 }
 
 // ProcessQueue: Destruction functions:

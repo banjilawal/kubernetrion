@@ -21,7 +21,7 @@ typedef struct FileBTreeNode {
 // FileBTreeNode: Destruction Functions:
 FileBTreeNode * create_file_b_tree_node(const File * parent);
 
-// FileBTparent Mutator Functions:
+// FileBTree Mutator Functions:
 void destroy_file_b_tree_node(const FileBTreeNode * file_b_tree_node);
 
 // FileBTreeNode: Accessor Functions:

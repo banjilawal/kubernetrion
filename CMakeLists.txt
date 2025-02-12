@@ -22,4 +22,7 @@ add_executable(kubernetrion
         include/process_stats.h
         src/compute/compute.c
         include/process_generator.h
+        include/graph_vertex.h
+        src/graph_vertex.c
+        src/processor/processor.c
 )
