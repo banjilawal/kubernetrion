@@ -15,7 +15,7 @@ add_executable(kubernetrion
 
         include/process_queue.h src/process/process_queue.c
         compute.c
-        src/process/process_generator.c
+        src/generator/process_generator.c
         include/process_b_tree.h
         include/process_queue.h
         include/process_queue.h
@@ -26,4 +26,7 @@ add_executable(kubernetrion
         include/graph_vertex.h
         src/graph_vertex.c
         src/processor/processor.c
+        include/generator.h
+        src/process_names.c
+        include/process_names.h
 )

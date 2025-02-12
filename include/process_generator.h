@@ -17,14 +17,13 @@
 
 #define MAX_MILLISECONDS 20
 #define MIN_MILLISECONDS 5
+#define STARTING_PROCESS_NUMBER 0
 
-// unsigned int STARTING_PROCESS_NUMBER = 0;
 // unsigned int nextId = 1;
 
 const char * random_process_name ();
-
-int random_priority();
-
+enum ProcessState random_process_state ();
+unsigned int random_priority();
 unsigned int random_milliseconds();
 
 Process * random_process(Process * parent);

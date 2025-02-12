@@ -4,8 +4,9 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "../include/process.h"
-#include "../include/processor.h"
+#include "process.h"
+#include "processor.h"
+#include "process_generator.h"
 
 const char * processor_state_to_string(const enum ProcessorState state) {
     switch (state) {
@@ -28,16 +29,7 @@ Processor * create_processor (const unsigned int id) {
     return processor;
 }
 
-ProcessState random_process_state () {
-    srand(time(NULL));
-    const int outcome = rand() % 100 + 1;
-    if (outcome < 15) return PROCESS_READY;
-    else if (outcome < 30) return PROCESS_WAITING_EVENT;
-    else if (outcome < 45) return PROCESS_WRITING_FILE_BLOCKED;
-    else if (outcome < 60) return PROCESS_READING_FILE_BLOCKED;
-    else if (outcome < 75) return PROCESS_READING_FILE;
-    else return PROCESS_WRITING_FILE;
-}
+
 
 Process * execute (Processor * processor, Process * process) {
     if (processor == NULL) {

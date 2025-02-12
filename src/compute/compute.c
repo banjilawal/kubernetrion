@@ -16,19 +16,19 @@
  unsigned int lastId = 0;
  unsigned int CYCLES = 0;
 
-int main(void) {
-    srand(time(NULL));
-    Process * parent = NULL;
-    ProcessQueue * process_queue = create_process_queue();
-    for (int i = 0; i < 32; i++) {
-        Process * process = random_process(NULL);
-        // printf("name:%s ID:%d\n", process->name, process->id);
-        process_to_string(process);
-        enter_process_queue(process_queue, process);
-        // if (i % 6 == 0) { parent = process; }
-    }
-    // print_process_queue(process_queue);
-
-    free(process_queue);
-    return 0;
-}
+// int main(void) {
+//     srand(time(NULL));
+//     Process * parent = NULL;
+//     ProcessQueue * process_queue = create_process_queue();
+//     for (int i = 0; i < 32; i++) {
+//         Process * process = random_process(NULL);
+//         // printf("name:%s ID:%d\n", process->name, process->id);
+//         process_to_string(process);
+//         enter_process_queue(process_queue, process);
+//         // if (i % 6 == 0) { parent = process; }
+//     }
+//     // print_process_queue(process_queue);
+//
+//     free(process_queue);
+//     return 0;
+// }
