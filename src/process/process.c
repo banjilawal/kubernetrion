@@ -14,7 +14,7 @@ const char * process_string_format = "Process["
     " state:%s"
     " priority:%d"
     " milliseconds_remaining:%d"
-    " CPU Cycles:%d"
+    " cpu_cycle_count:%d"
     " reading_file:%s "
     " writing_file:%s]";
 
@@ -86,7 +86,7 @@ Process * create_process(
     process->priority = priority;
     process->milliseconds_remaining = milliseconds_remaining;
 
-    process->number_of_queue_entries = 0;
+    process->cpu_cycle_count = 0;
     process->number_of_child_processes = 0;
     process->state = PROCESS_RUNNING;
     return process;
@@ -193,7 +193,7 @@ const char * process_to_string(const Process * process) {
         process_state_to_string(process->state),
         process->priority,
         process->milliseconds_remaining,
-        process->number_of_queue_entries,
+        process->cpu_cycle_count,
         file_to_string(process->reading_file),
         file_to_string(process->writing_file)
     );

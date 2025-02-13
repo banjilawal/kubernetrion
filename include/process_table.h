@@ -6,43 +6,48 @@
 #define PROCESS_TABLE
 
 #pragma once
-#include <stddef.h>
+
 #include "file.h"
 #include "process.h"
 
-/*=== The ProcessPriorityRecord Data Type and its Functions ===*/
-typedef struct ProcessPriorityRecord {
+#define PROCESS_RECORD_STRING_SIZE 256
+
+/*=== The ProcessRecord Data Type and its Functions ===*/
+typedef struct ProcessRecord {
+    const char * name;
     const unsigned int pid;
+    const unsigned int cpu_cycle_count;
     const unsigned int priority;
-    // unsigned int previous_priority;
-    // unsigned int highest_priority;
-    // unsigned int lowest_priority;
-    // unsigned int promotion_counter;
-    // unsigned int demotion_counter;
+    const unsigned int milliseconds_remaining;
     const ProcessState state;
-} ProcessPriorityRecord;
+} ProcessRecord;
 
 // ProcessExecutionRecord: Creation Functions:
-ProcessPriorityRecord * create_process_priority_record (Process * process);
+ProcessRecord * create_process_record (Process * process);
 
 // ProcessPriorityRecord: Destruction Functions:
-void destroy_process_priority_record (ProcessPriorityRecord * process_priority_record);
+void destroy_process_record (const ProcessRecord * process_record);
 
 // ProcessPriorityRecord: Mutator Functions:
 // NONE
 // ProcessPriorityRecord: Accessor Functions:
-// NONE
+unsigned int process_record_get_pid(const ProcessRecord* process_record);
+unsigned int process_record_get_priority(const ProcessRecord* process_record);
+ProcessState process_record_get_state(const ProcessRecord* process_record);
+const char *  process_record_get_name(const ProcessRecord* process_record);
+unsigned int process_record_get_cpu_cycle_count(const ProcessRecord* process_record);
+ProcessState process_record_get_milliseconds_remaining(const ProcessRecord* process_record);
 
-// ProcessPriorityRecord:Boolean Functions:
-bool process_priority_records_are_equal (const ProcessPriorityRecord * a, const ProcessPriorityRecord * b);
+// ProcessyRecord:Boolean Functions:
+bool process_records_are_equal (const ProcessRecord * a, const ProcessRecord * b);
 
 // ProcessPriorityRecord: ToString Function:
-const char * process_priority_record_to_string (ProcessPriorityRecord * process_priority_record);
+const char * process_record_to_string (ProcessRecord * process_record);
 
 /*=== The ProcessExecutionRecord Data Type and its Functions ===*/
 
 typedef struct ProcessExecutionRecord {
-    unsigned int pid;
+    const unsigned int pid;
     unsigned int number_of_ready_cycles;
     unsigned int number_of_running_cycles;
     unsigned int number_of_blocked_reads;
@@ -73,8 +78,7 @@ const char * process_execution_record_to_string (ProcessExecutionRecord * proces
 
 /*=== The ProcessDataNode Data Type and its Functions ===*/
 typedef struct ProcessDataNode {
-  ProcessPriorityRecord * priority_record;
-  ProcessExecutionRecord * execution_record;
+  ProcessRecord * process_record;
   struct ProcessDataNode * next;
   struct ProcessDataNode * previous;
 } ProcessDataNode;
@@ -88,7 +92,7 @@ void destroy_process_data_node (ProcessDataNode * process_data_node);
 // ProcessDataNode: Mutator Functions:
 // NONE
 // ProcessDataNode: Accessor Functions:
-// NONE
+const ProcessRecord * get_process_record(const ProcessDataNode * process_data_node);
 
 // ProcessDataNode:Boolean Functions:
 bool process_data_nodes_are_equal(const ProcessDataNode * a, const ProcessDataNode * b);
@@ -115,10 +119,10 @@ void add_process_data (ProcessTable * process_table, const Process * process);
 void remove_process_data (ProcessTable * process_table, const unsigned int process_id);
 
 // ProcessTable: Accessor Functions:
-ProcessDataNode * find_process_data_node (ProcessTable * process_table, const unsigned int process_id);
+ProcessTable * filer_process_table_by_pid (ProcessTable * process_table, const unsigned int process_id);
 
 // ProcessTable:Boolean Functions:
-// NONE
+bool process_table_is_empty (ProcessTable * process_table);
 // ProcessTable: ToString Function:
 const char * process_table_to_string (ProcessTable * process_table);
 

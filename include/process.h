@@ -41,8 +41,8 @@ typedef struct Process {
     File * reading_file;
     File * writing_file;
     unsigned int priority;
+    unsigned int cpu_cycle_count;
     unsigned int number_of_child_processes;
-    unsigned int number_of_queue_entries;
     unsigned int milliseconds_remaining;
     ProcessState state;
 } Process;
