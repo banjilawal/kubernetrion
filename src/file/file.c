@@ -8,6 +8,8 @@
 
 #include "file.h"
 
+#include "process.h"
+
 // FileState: toString
 const char * file_state_to_string (const FileState state) {
     switch (state) {
@@ -30,9 +32,15 @@ FileDescriptor * create_file_descriptor (const char * name, const unsigned int i
     FileDescriptor * descriptor = (FileDescriptor *) malloc(sizeof(FileDescriptor));
     if (descriptor == NULL) {
         printf("%s", file_state_to_string(FILE_DESCRIPTOR_MEMORY_ALLOCATION_FAILED));
-        exit(0);
+        return NULL;
     }
-    descriptor->id = id;
+
+    if (name == NULL) {
+        printf("Name is NULL. File creation failed");
+        return NULL;
+    }
+
+    *(unsigned int *)&descriptor->id = id;
     descriptor->state = FILE_IS_CLOSED;
     descriptor->name = strdup(name);
     descriptor->megabytes = megabytes;
@@ -41,7 +49,7 @@ FileDescriptor * create_file_descriptor (const char * name, const unsigned int i
 
 // FileDescriptor: Destruction Functions:
 void destroy_file_descriptor (FileDescriptor * file_descriptor) {
-    free(file_descriptor->name);
+    free((unsigned int *)file_descriptor->id);
     free(file_descriptor);
 }
 
@@ -49,6 +57,8 @@ void destroy_file_descriptor (FileDescriptor * file_descriptor) {
 // NONE
 
 // FileDescriptor: Accessor Functions
+unsigned int get_file_descriptor_id (const FileDescriptor * file_descriptor) { return file_descriptor->id; }
+
 const char * file_descriptor_to_string (const FileDescriptor * file_descriptor) {
     if (file_descriptor == NULL) return file_state_to_string(FILE_DESCRIPTOR_IS_NULL);
 
@@ -103,14 +113,27 @@ void destroy_file (File * file) {
 
     file->next = NULL;
     file->previous = NULL;
+    destroy_file_descriptor(file->descriptor);
     free(file);
 }
 
 // File Mutator Functions
 void set_file_name (const File * file, const char * name) { file->descriptor->name = strdup(name); }
 
+bool set_file_reader (const File * file, const Process * process) {
+    if (file == NULL) return false;
+    if (processes_are_equal(file->reader, process)) return true;
+    if (file->reader != NULL) return false;
+    set_reading_file(process, file);
+    return false;
+}
+
+bool set_file_writer (const File * file, const Process * writer, const unsigned int megabytes_to_write) {
+    return false;
+}
+
 // File: Accessor Functions
-unsigned int get_file_id (const File * file) { return file->descriptor->id; }
+unsigned int get_file_id (const File * file) { return get_file_descriptor_id(file->descriptor); }
 const char * get_file_name (const File * file) { return file->descriptor->name; }
 
 // File: Boolean Functions

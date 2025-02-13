@@ -61,6 +61,10 @@ Process * create_process(
         printf("%s\n", process_state_to_string(PROCESS_MEMORY_ALLOCATION_FAILED));
         return NULL;
     }
+    if (name == NULL) {
+        printf("The process name cannot be null. Process creation failed");
+        return NULL;
+    }
 
     if (parent != NULL) {
         parent->child = process;
@@ -74,7 +78,7 @@ Process * create_process(
     }
 
     *((unsigned int *)&process->id) = id;  // Only allowed during initialization
-    process->name = (name == NULL) ? strdup("Unnamed Process") : strdup(name);
+    * ((char **)&process->name) =  strdup(name);
 
     process->child = NULL;
     process->reading_file = reading_file;
@@ -94,6 +98,8 @@ void destroy_process(Process * process) {
     destroy_process(process->child);
     unset_reading_file(process);
     unset_writing_file(process);
+    free((unsigned int *)process->id);
+    free((char *)process->name);
     free(process);
 }
 
@@ -156,7 +162,7 @@ unsigned int get_process_id(const Process * process) { return process->id; }
 bool processes_are_equal (const Process * a, const Process * b) {
     if (&a == &b) return true;
     if (a == NULL || b == NULL) return false;
-    return a->id == b->id && strcmp(a->name, b->name) == 0;
+    return a->id == b->id;
 }
 
 // Process: ToString Function:

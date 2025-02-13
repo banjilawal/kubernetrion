@@ -12,14 +12,14 @@
 
 /*=== The ProcessPriorityRecord Data Type and its Functions ===*/
 typedef struct ProcessPriorityRecord {
-    unsigned int pid;
-    unsigned int current_priority;
-    unsigned int previous_priority;
-    unsigned int highest_priority;
-    unsigned int lowest_priority;
-    unsigned int promotion_counter;
-    unsigned int demotion_counter;
-    ProcessState current_process_state;
+    const unsigned int pid;
+    const unsigned int priority;
+    // unsigned int previous_priority;
+    // unsigned int highest_priority;
+    // unsigned int lowest_priority;
+    // unsigned int promotion_counter;
+    // unsigned int demotion_counter;
+    const ProcessState state;
 } ProcessPriorityRecord;
 
 // ProcessExecutionRecord: Creation Functions:

@@ -21,7 +21,11 @@ unsigned int random_milliseconds() {
 }
 
 const char * random_process_name () {
-    return process_names[rand() % PROCESS_NAME_COUNT - 1];
+    unsigned int index= rand() % (PROCESS_NAME_COUNT - 1);
+    printf("index: %u\n", index);
+    const char * name =  process_names[index];
+    printf("%s name: %s\n", process_names[index], name);
+    return name;
 }
 
 ProcessState random_process_state () {

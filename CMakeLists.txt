@@ -29,4 +29,6 @@ add_executable(kubernetrion
         include/generator.h
         src/process_names.c
         include/process_names.h
+        src/stats/process_stats.c
+        src/process_table/process_table.c
 )

@@ -45,7 +45,7 @@ const char * file_state_to_string (const enum FileState state);
 
 typedef struct FileDescriptor {
     char * name;
-    unsigned int id;
+    const unsigned int id;
     unsigned int megabytes;
     FileState state;
 } FileDescriptor;
@@ -55,6 +55,12 @@ FileDescriptor * create_file_descriptor (const char * name, const unsigned int i
 
 // FileDescriptor: Destruction Functions:
 void destroy_file_descriptor (FileDescriptor * file_descriptor);
+
+// FileDescriptor: Mutator Functions:
+// NONE
+
+// FileDescriptor: Accessor Functions:
+unsigned int get_file_descriptor_id (const FileDescriptor * file_descriptor);
 
 // FileDescriptor: Boolean Functions:
 bool files_descriptors_are_equal (const FileDescriptor * a, const FileDescriptor * b);
@@ -79,6 +85,8 @@ void destroy_file (File * file);
 
 // File: Mutator Functions
 void set_file_name (const File * file, const char * name);
+bool set_file_reader (const File * file, const Process * process);
+bool set_file_writer (const File * file, const Process * writer, const unsigned int megabytes_to_write);
 
 // File: Accessor Functions
 unsigned int get_file_id (const File * file);

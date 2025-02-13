@@ -201,26 +201,26 @@ void destroy_blocked_reads_summary(ProcessCyclesSummary * process_cycles_summary
 const char * process_cycles_summary_to_string(const ProcessCyclesSummary * process_cycles_summary);
 
 
-/*=== The ProcessStats Data Type and its Functions ===*/
-typedef struct processStats {
-
-    unsigned int total_processor_cycles;
-    unsigned int min_processor_cycles;
-    unsigned int max_processor_cycles;
-    unsigned int avg_processor_cycles;
-    unsigned int total_blocked_read;
-    unsigned int min_blocks;
-    unsigned int max_blocks;
-    unsigned int avg_blocks;
-    unsigned int maxBlockCount;
-    unsigned int minBlockCount;
-    unsigned int averageBlockCount;
-    unsigned int minCycleRuns;
-    unsigned int maxCycleRuns;
-    unsigned int averageCycleRuns;
-
-    unsigned int oldestPID;
-} ProcessStats;
+// /*=== The ProcessStats Data Type and its Functions ===*/
+// typedef struct processStats {
+//
+//     unsigned int total_processor_cycles;
+//     unsigned int min_processor_cycles;
+//     unsigned int max_processor_cycles;
+//     unsigned int avg_processor_cycles;
+//     unsigned int total_blocked_read;
+//     unsigned int min_blocks;
+//     unsigned int max_blocks;
+//     unsigned int avg_blocks;
+//     unsigned int maxBlockCount;
+//     unsigned int minBlockCount;
+//     unsigned int averageBlockCount;
+//     unsigned int minCycleRuns;
+//     unsigned int maxCycleRuns;
+//     unsigned int averageCycleRuns;
+//
+//     unsigned int oldestPID;
+// } ProcessStats;
 // ProcessTable: Creation Functions:
 // ProcessTable: Destruction Functions:
 // ProcessTable: Accessor Functions:
