@@ -27,19 +27,19 @@ void print_allocation_failure(const char *data_type) {
 // ProcessState: toString Function
 const char * process_state_to_string(const ProcessState process_state) {
     switch (process_state) {
-        case PROCESS_READY: return "Process is ready";
-        case PROCESS_RUNNING: return "Process is running";
-        case PROCESS_READING_FILE_BLOCKED: return "Reading file blocked";
-        case PROCESS_WRITING_FILE_BLOCKED: return "Writing blocked";
-        case PROCESS_WAITING_EVENT: return "Process is waiting event";
-        case PROCESS_FINISHED: return "Process is finished";
-        case PROCESS_IS_NULL: return "Process is NULL!";
-        case PROCESS_READING_FILE: return "Process is reading file";
-        case PROCESS_WRITING_FILE: return "Process is writing file";
-        case PROCESS_MEMORY_ALLOCATION_FAILED: return "Process memory allocation failed!";
+        case PROCESS_READY: return PROCESS_READY_MESSAGE;
+        case PROCESS_RUNNING: return PROCESS_RUNNING_MESSAGE;
+        case PROCESS_READING_FILE_BLOCKED: return PROCESS_READING_FILE_BLOCKED_MESSAGE;
+        case PROCESS_WRITING_FILE_BLOCKED: return PROCESS_WRITING_FILE_BLOCKED_MESSAGE;
+        case PROCESS_WAITING_EVENT: return PROCESS_WAITING_EVENT_MESSAGE;
+        case PROCESS_FINISHED: return PROCESS_FINISHED_MESSAGE;
+        case PROCESS_IS_NULL: return PROCESS_IS_NULL_MESSAGE;
+        case PROCESS_READING_FILE: return PROCESS_READING_FILE_MESSAGE;
+        case PROCESS_WRITING_FILE: return PROCESS_WRITING_FILE_MESSAGE;
+        case PROCESS_MEMORY_ALLOCATION_FAILED: return PROCESS_MEMORY_ALLOCATION_FAILED_MESSAGE;
         default:
-            printf("Unknown process state: %d\n", process_state);
-            return "Unknown process_state";
+            printf("%s: %d\n", UNDEFINED_PROCESS_STATE_MESSAGE, process_state);
+            return UNDEFINED_PROCESS_STATE_MESSAGE;
     }
 }
 
@@ -95,15 +95,22 @@ Process * create_process(
 // Process: Destruction Functions:
 void destroy_process(Process * process) {
     if (process == NULL) return;
+
     destroy_process(process->child);
+
     unset_reading_file(process);
     unset_writing_file(process);
-    free((unsigned int *)process->id);
+
     free((char *)process->name);
     free(process);
+
+    process = NULL;
 }
 
-// Process: Mutator Functions:
+/*
+ *set_reading(Process * process, File * file)
+ *return: void
+ */
 void set_reading_file(Process * process, File * file) {
     if (process == NULL) return;
     if (files_are_equal(process->reading_file, file)) return;
@@ -155,8 +162,15 @@ void kill_child_process(Process * parent) {
     destroy_process(parent->child);
 }
 
-// Process: Accessor Functions:
+/*
+ *get_process_id(const Process * process)
+ */
 unsigned int get_process_id(const Process * process) { return process->id; }
+
+/*
+ *get_process_name(const Process * process)
+ */
+char * get_process_name(const Process * process) { return (char *) process->name; }
 
 // Process: Boolean Functions:
 bool processes_are_equal (const Process * a, const Process * b) {
@@ -211,10 +225,12 @@ const char * process_node_state_to_string(const ProcessNodeState state) {
     }
 }
 
-/*=== The ProcessNode Data Type and It's Functions ===*/
-
-// ProcessNode: Creation functions:
+/*
+ *create_process_node(Process * process)
+ *return: ProcessNode
+ */
 ProcessNode * create_process_node(Process * process) {
+
     if (process == NULL || process->name == NULL) {
         printf("%s cannot create a node for a null process\n", process_state_to_string(PROCESS_IS_NULL));
         return NULL;
@@ -228,6 +244,8 @@ ProcessNode * create_process_node(Process * process) {
     process_node->process = process;
     process_node->next = NULL;
     process_node->previous = NULL;
+
+    return process_node;
 }
 
 // ProcessNode: Destruction functions:

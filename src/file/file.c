@@ -49,8 +49,8 @@ FileDescriptor * create_file_descriptor (const char * name, const unsigned int i
 
 // FileDescriptor: Destruction Functions:
 void destroy_file_descriptor (FileDescriptor * file_descriptor) {
-    free((unsigned int *)file_descriptor->id);
     free(file_descriptor);
+    file_descriptor = NULL;
 }
 
 // FileDescriptor: Mutator Functions:
@@ -120,7 +120,7 @@ void destroy_file (File * file) {
 // File Mutator Functions
 void set_file_name (const File * file, const char * name) { file->descriptor->name = strdup(name); }
 
-bool set_file_reader (const File * file, const Process * process) {
+bool set_file_reader (File * file, Process * process) {
     if (file == NULL) return false;
     if (processes_are_equal(file->reader, process)) return true;
     if (file->reader != NULL) return false;
@@ -128,7 +128,7 @@ bool set_file_reader (const File * file, const Process * process) {
     return false;
 }
 
-bool set_file_writer (const File * file, const Process * writer, const unsigned int megabytes_to_write) {
+bool set_file_writer (File * file, Process * writer, const unsigned int megabytes_to_write) {
     return false;
 }
 

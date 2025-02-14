@@ -176,13 +176,20 @@ void delete_directory_from_tree (const DirectoryTree * directory_tree, const uns
     }
 }
 
-void move_directory_to_tree (const DirectoryTree * source, const DirectoryTree * destination, const unsigned int directory_id) {
-    if (source == NULL || destination == NULL) return;
-    if (source == destination || directories_are_equal(source->root, destination->root)) return;
-    Directory * directory = find_directory_by_name(source, directory_id);
-    directory->parent = destination->root;
-    delete_directory_from_tree(source, directory_id);
+bool move_directory_to_tree (const DirectoryTree * source, const DirectoryTree * destination, unsigned int directory_id) {
+    if (source == NULL || destination == NULL) return false;
+    if (source == destination || directories_are_equal(source->root, destination->root)) return false;
+
+    Directory * directory = find_directory_by_id(source, directory_id);
+    if (directory == NULL) {
+        printf("Directory with id %d does not exist. move operation failed\n", directory_id);
+        return false;
+    }
+    if (directory->parent != NULL) {
+        delete_directory_from_tree(source, directory_id);
+    }
     add_directory_to_tree(destination, directory);
+    return true;
 }
 
 // DirectoryTree: Accessor Functions

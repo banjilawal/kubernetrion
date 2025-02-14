@@ -1,7 +1,6 @@
 //
 // Created by banji on 12/10/2024.
 //
-
 #ifndef DIRECTORY_H
 #define DIRECTORY_H
 
@@ -30,8 +29,8 @@ void destroy_directory (Directory * directory);
 
 // Directory: Mutator Functions
 bool add_file (Directory * directory, File * file);
-bool remove_file (Directory * directory, const unsigned int fileId);
-bool move_file (Directory * source, Directory * destination, const unsigned int fileId);
+bool remove_file (Directory * directory, const unsigned int file_id);
+bool move_file (Directory * source, Directory * destination, unsigned int file_id);
 bool set_directory_capacity(Directory * directory, const unsigned int capacity);
 
 // Directory: Accessor Functions
@@ -63,7 +62,7 @@ void destroy_directory_tree (DirectoryTree * directory_tree);
 // DirectoryTree: Mutator Functions
 void add_directory_to_tree(const DirectoryTree* directory_tree, Directory * directory);
 void delete_directory_from_tree(const DirectoryTree* directory_tree, const unsigned int directory_id);
-void move_directory_to_tree (const DirectoryTree * source, const DirectoryTree * destination, const unsigned int directory_id);
+bool move_directory_to_tree (const DirectoryTree * source, const DirectoryTree * destination, const unsigned int directory_id);
 
 // DirectoryTree: Accessor Functions
 unsigned int get_directory_tree_mega_bytes (const DirectoryTree* directory_tree);

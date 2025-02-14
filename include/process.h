@@ -15,6 +15,18 @@
 #define MIN_PRIORITY 1
 #define PROCESS_STRING_SIZE 256
 
+#define PROCESS_READY_MESSAGE "Process is ready"
+#define PROCESS_RUNNING_MESSAGE "Process is running"
+#define PROCESS_READING_FILE_BLOCKED_MESSAGE "Reading file blocked"
+#define PROCESS_WRITING_FILE_BLOCKED_MESSAGE "Writing blocked"
+#define PROCESS_WAITING_EVENT_MESSAGE "Process is waiting event"
+#define PROCESS_FINISHED_MESSAGE "Process is finished"
+#define PROCESS_IS_NULL_MESSAGE "Process is NULL!"
+#define PROCESS_READING_FILE_MESSAGE "Process is reading file"
+#define PROCESS_WRITING_FILE_MESSAGE "Process is writing file"
+#define PROCESS_MEMORY_ALLOCATION_FAILED_MESSAGE "Process memory allocation failed!"
+#define UNDEFINED_PROCESS_STATE_MESSAGE "The Process state is undefined!"
+
 /*=== ProcessState Enum and Functions ===*/
 typedef enum ProcessState {
     PROCESS_READY,
@@ -71,7 +83,7 @@ void remove_child_process(Process * parent, Process * child);
 
 // Process: Accessor Functions:
 unsigned int get_process_id(const Process * process);
-const char * get_process_name(const Process * process);
+char * get_process_name(const Process * process);
 
 // Process: Boolean Functions:
 bool processes_are_equal(const Process * a, const Process * b);

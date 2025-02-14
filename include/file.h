@@ -85,8 +85,8 @@ void destroy_file (File * file);
 
 // File: Mutator Functions
 void set_file_name (const File * file, const char * name);
-bool set_file_reader (const File * file, const Process * process);
-bool set_file_writer (const File * file, const Process * writer, const unsigned int megabytes_to_write);
+bool set_file_reader (File * file, Process * process);
+bool set_file_writer (File * file, Process * writer, const unsigned int megabytes_to_write);
 
 // File: Accessor Functions
 unsigned int get_file_id (const File * file);

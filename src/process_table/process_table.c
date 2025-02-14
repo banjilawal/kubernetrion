@@ -20,75 +20,64 @@ const char * process_record_string_format = "ProcessRecord["
 
 /*=== The ProcessRecord Data Type and its Functions ===*/
 // ProcessRecord: Creation Functions:
-ProcessRecord * create_process_priority_record (Process * process) {
+ProcessRecord * create_process_priority_record (const Process * process) {
   if (process == NULL) {
     printf("%s\n", process_state_to_string(PROCESS_IS_NULL));
     return NULL;
   }
+
   ProcessRecord * process_record = (ProcessRecord *) malloc (sizeof (ProcessRecord));
   if (process_record == NULL) {
     printf("Failed to allocate memory for ProcessRecord\n");
+    free(process_record);
     return NULL;
-  }    const char * name;
+  }
 
+  process_record->name = (char *) get_process_name(process);;
+  process_record->pid = get_process_id(process);
+  process_record->milliseconds_remaining = process->milliseconds_remaining;
+  process_record->cpu_cycle_count = process->cpu_cycle_count;
+  process_record->priority = process->priority;
+  process_record->state = process->state;
 
-  *(const char **)&process_record->name = get_process_name(process)
-  *(unsigned int *)&process_record->pid = get_process_id(process); 
-  *(unsigned int *)&process_record->milliseconds_remaining = process->milliseconds_remaining;
-  *(unsigned int *)&process_record->cpu_cycle_count = process->cpu_cycle_count;
-  *(unsigned int *)&process_record->priority = process->priority; 
-  *(ProcessState *)&process_record->state = process->state;
   return process_record;
 }
 
-// ProcessPriorityRecord: Destruction Functions:
-void destroy_process_priority_record (ProcessRecord * process_record) {
+/*
+ *destroy_process_record(ProcessRecord * process_record)
+ *return: void
+ */
+void destroy_process_record (ProcessRecord * process_record) {
   if (process_record == NULL) return;
   free(process_record);
 }
 
-//// ProcessPriorityRecord: Mutator Functions:
+/*
+ *copy_process_record(const ProcessRecord * processRecord)
+ *return: ProcessRecord *
+ */
+ProcessRecord * copy_process_record (const ProcessRecord * process_record) {
 
-
-// ProcessPriorityRecord: Accessor Functions:
-unsigned int process_record_get_pid(const ProcessRecord* process_record) {
-  return process_record->pid;
+  // If process_record is null the copy fails
+  if (process_record == NULL) return NULL;
 }
-
-unsigned int process_record_get_priority(const ProcessRecord* process_record) {
-  return process_record->priority;
-}
-
-ProcessState process_record_get_state(const ProcessRecord* process_record) {
-  return process_record->state;
-}
-
-const char *  process_record_get_name(const ProcessRecord* process_record) {
-  return process_record->name;
-}
-
-unsigned int process_record_get_cpu_cycle_count(const ProcessRecord* process_record) {
-  return process_record->cpu_cycle_count;
-}
-
-ProcessState process_record_get_milliseconds_remaining(const ProcessRecord* process_record) {
-  return process_record->milliseconds_remaining;
-}
-
-// ProcessRecord:Boolean Functions:
-bool process_priority_records_are_equal (const ProcessRecord * a, const ProcessRecord * b) {
+/*
+ *process_records_are_equal(const ProcessRecord *a, const ProcessRecord *b)
+ *return: bool
+ */
+bool process_records_are_equal (const ProcessRecord * a, const ProcessRecord * b) {
   if (a == b) return true;
   if (a == NULL || b == NULL) return false;
-  return process_record_get_pid(a) == process_record_get_pid(b)  &&
-    process_record_get_cpu_cycle_count(a) == process_record_get_cpu_cycle_count(b) &&
-    process_record_get_milliseconds_remaining(a) == process_record_get_milliseconds_remaining(b) &&
-    process_record_get_priority(a) == process_record_get_priority(b) &&
-    process_record_get_state(a) == process_record_get_state(b);
+  return a->pid == b->pid && a->cpu_cycle_count == b->cpu_cycle_count &&
+    a->milliseconds_remaining == b->milliseconds_remaining && a->priority == b->priority &&
+    a->state == b->state && strcmp(a->name, b->name) == 0;
 }
 
-// ProcessPriorityRecord: ToString Function:
-const char * process_record_to_string (ProcessRecord * process_record) {
-  const char * process_record_string_format = "ProcessRecord["
+/*
+ *process_record_to_string(const ProcessRecord * process_record)
+ *return: bool
+ */
+const char * process_record_to_string (const ProcessRecord * process_record) {
 
   if (process_record == NULL) {
     printf("process_record is null");
@@ -105,152 +94,201 @@ const char * process_record_to_string (ProcessRecord * process_record) {
       string,
       bufferSize,
       process_record_string_format,
-      process_record_get_pid(process_record),
-      process_record_get_name(process_record),
-      process_record_get_state(process_record),
-      process_record_get_priority(process_record),
-      process_record_get_milliseconds_remaining(process_record),
-      process_record_get_cpu_cycle_count(process_record)
+      process_record->pid, process_record->name, process_record->priority, process_record->milliseconds_remaining,
+      process_record->cpu_cycle_count
   );
   return string;
 }
 
-/*=== The ProcessDataNode Data Type and its Functions ===*/
-
-// ProcessDataNode: Creation Functions:
+/*
+ *create_process_data_node(ProcessRecord * process_record)
+ *return: ProcessNode *
+ */
 ProcessDataNode * create_process_data_node (ProcessRecord * process_record) {
+
+  // Handle null process_record
   if (process_record == NULL) {
-    printf("Cannot create process node. the record is null.\n");
+    printf("process_record is null. Cannot create process_data_node.\n");
     return NULL;
   }
 
+  // Assign memory to ProcessDataNode and its' pointer
   ProcessDataNode * process_data_node = (ProcessDataNode *) malloc (sizeof (ProcessDataNode));
+
+  // If process_data_node was not created clean up and return
   if (process_data_node == NULL) {
-    printf("Failed to allocate memory for process_data_node.\n");
+    printf("%s\n", PROCESS_DATA_NODE_IS_NULL_MESSAGE);
+    free(process_data_node);
+    process_data_node = NULL;
     return NULL;
   }
 
+  // Set fields in the ProcessRecord instance and return
   process_data_node->process_record = process_record;
   process_data_node->next = NULL;
   process_data_node->previous = NULL;
+
   return process_data_node;
 }
 
-// ProcessDataNode: Destruction Functions:
+/*
+ *destroy_process_data_node(ProcessDataNode * process_data_node)
+ *return: void
+ */
 void destroy_process_data_node (ProcessDataNode * process_data_node) {
+
+  // If the ProcessDataNode is already null. Nothing to do, return.
   if (process_data_node == NULL) return;
-  process_data_node->next->previous = process_data_node->previous;
-  process_data_node->previous->next = process_data_node->next;
-  process_data_node->previous = NULL;
-  process_data_node->next = NULL;
+
+  // Destroy ProcessDataNode's record
+  destroy_process_record(process_data_node->process_record);
+
+  // Free the memory allocated to the ProcessDataNode. Remove the pointer to the address.
   free(process_data_node);
+  process_data_node = NULL;
 }
 
-//// ProcessDataNode: Mutator Functions:
-//// NONE
-//// ProcessDataNode: Accessor Functions:
-ProcessDataNode * copy_process_data_node (ProcessDataNode * process_data_node) {
-  if (process_data_node == NULL) return NULL;
-  ProcessDataNode * copy = (ProcessDataNode *) malloc (sizeof (ProcessDataNode));
-  if (copy == NULL) {
-    printf("Failed to allocate memory for copy_process_data_node.\n");
+/*
+ *copy_process_data_node(const ProcessDataNode * process_data_node)
+ *return: ProcessDataNode *
+ */
+ProcessDataNode * copy_process_data_node (const ProcessDataNode * process_data_node) {
+
+  if (process_data_node == NULL) {
+    printf("%s. Cannot copy process data_node", PROCESS_DATA_NODE_IS_NULL_MESSAGE);
     return NULL;
   }
+
+  ProcessDataNode * copy = (ProcessDataNode *) malloc (sizeof (ProcessDataNode));
+  if (copy == NULL) {
+    printf("%s\n", PROCESS_DATA_NODE_MEMORY_ALLOCATION_FAILED_MESSAGE);
+    destroy_process_data_node(copy);
+    copy = NULL;
+    return NULL;
+  }
+
   copy = create_process_data_node(process_data_node->process_record);
   return copy;
 }
 
-ProcessRecord * get_process_data_node_record (const ProcessDataNode * process_data_node) {
-  return process_data_node->process_record;
-}
-
-unsigned int process_data_node_get_pid(const ProcessDataNode * process_data_node) {
-  return process_record_get_pid(process_data_node->process_record);
-}
-
-unsigned int process_data_node_get_priority(const ProcessDataNode * process_data_node) {
-  return process_record_get_priority(process_data_node->process_record);
-}
-
-ProcessState process_data_node_get_state(const ProcessDataNode * process_data_node) {
-  return process_record_get_state(process_data_node->process_record);
-}
-
-const char * process_data_node_get_name(const ProcessDataNode * process_data_node) {
-  return process_record_get_name(process_data_node->process_record);
-}
-
-unsigned int process_data_node_get_cpu_cycle_count(const ProcessDataNode * process_data_node) {
-  return process_record_get_cpu_cycle_count(process_data_node->process_record);
-}
-
-ProcessState process_data_node_get_milliseconds_remaining(const ProcessDataNode * process_data_node) {
-  return process_record_get_milliseconds_remaining(process_data_node->process_record);
-}
-
-// ProcessDataNode:Boolean Functions:
+/*
+ *process_data_nodes_are_equal(const ProcessDataNode * a, const ProcessDataNode * b)
+ *return bool
+ */
 bool process_data_nodes_are_equal(const ProcessDataNode * a, const ProcessDataNode * b) {
   if (a == b) return true;
   if (a == NULL || b == NULL) return false;
-  return process_priority_records_are_equal(get_process_data_node_record(a), get_process_data_node_record(b));
+  return process_records_are_equal( a->process_record, b->process_record);
 }
 
 
-// ProcessDataNode: ToString Function:
-const char * process_data_node_to_string (ProcessDataNode * process_data_node) {
-  return process_record_to_string(get_process_data_node_record(process_data_node));
-}
-
-///*=== The ProcessTable Data Type and its Functions ===*/
-//
-//typedef struct ProcessTable {
-//    ProcessDataNode * head;
-//    ProcessDataNode * tail;
-//    unsigned int totalProcesses;
-//} ProcessTable;
-//
-//// ProcessTable: Creation Functions:
-ProcessTable * create_process_table () {
-  ProcessTable * process_table = (ProcessTable *) malloc (sizeof (ProcessTable));
-  if (process_table == NULL) {
-    printf("Failed to allocate memory for process_table.\n");
+/*
+ *process_data_node_to_string(const ProcessDataNode * process_data_node)
+ *return: const char *
+ */
+const char * process_data_node_to_string (const ProcessDataNode * process_data_node) {
+  if (process_data_node == NULL || process_data_node->process_record == NULL) {
+    printf("%s. Cannot print process data_node", PROCESS_DATA_NODE_IS_NULL_MESSAGE);
     return NULL;
   }
+
+  return process_record_to_string(process_data_node->process_record);
+}
+
+
+/*
+ *create_process_table()
+ *return ProcessTable *
+ */
+ProcessTable * create_process_table () {
+
+  // Assign a pointer to memory space that fits a ProcessTable
+  ProcessTable * process_table = (ProcessTable *) malloc (sizeof (ProcessTable));
+
+  // If there was not enough memory free what was assigned; print a message, and return null
+  if (process_table == NULL) {
+    printf("%s\n", PROCESS_TABLE_MEMORY_ALLOCATION_FAILED_MESSAGE);
+    destroy_process_table(process_table);
+    free(process_table);
+    return NULL;
+  }
+
+  // Initialize ProcessTable's fields and return the instance
   process_table->head = NULL;
   process_table->tail = NULL;
-  process_table->totalProcesses = 0;
+  process_table->number_of_rows = 0;
+
   return process_table;
 }
 
-// ProcessTable: Destruction Functions:
+
+/*
+ *destroy_process_table
+ *return: void
+ */
 void destroy_process_table (ProcessTable * process_table) {
+
+  // If ProcessTable is already null. Nothing to do return to te the caller
   if (process_table == NULL) return;
+
+  // Create a cursor that traverses the table and destroy each node
   ProcessDataNode *cursor = process_table->head;
   while (cursor != NULL) {
       ProcessDataNode * next = cursor->next;
       destroy_process_data_node(cursor);
       cursor = next;
   }
+
+  // Destroy head and tail
+  destroy_process_data_node(process_table->head);
+  destroy_process_data_node(process_table->tail);
+
+  // free the memory assigned
   free(process_table);
+
+  // Set the pointer to null
+  process_table = NULL;
 }
 
-// ProcessTable: Mutator Functions:
-void add_process_data (ProcessTable * process_table, const Process * process) {
-  if (process_table == NULL) return;
-  if (process == NULL) return;
-  ProcessDataNode * node = create_process_data_node(process);
-  if (node == NULL) return;
-  if (process_table->head == NULL) {
-      process_table->head = node;
-      process_table->tail = node;
-  } else {
-      process_table->tail->next = node;
-      process_table->tail = node;
+/*
+ *add_process_data_node_to_table(ProcessTable * process_table, ProcessDataNode * process_data_node)
+ *return: void
+ *return: void
+ */
+void add_process_data (ProcessTable * process_table, ProcessDataNode * process_data_node) {
+
+  // Cannot add to a null ProcessTable
+  if (process_table == NULL) {
+    printf("%s. Cannot add process data.\n", PROCESS_TABLE_IS_NULL_MESSAGE);
+    return;
   }
-  process_table->totalProcesses++;
+
+  // Cannot add null ProcessDataNode
+  if (process_data_node == NULL) {
+    printf("%s. Cannot add to the process table.\n", PROCESS_DATA_NODE_IS_NULL_MESSAGE);
+    return;
+  }
+
+  // If ProcessTable is empty head and tail are the ProcessDataNode instance
+  if (process_table_is_empty(process_table)) {
+    process_table->head = process_data_node;
+    process_table->tail = process_data_node;
+  }
+// If ProcessTable is not empty add ProcessDataNode at the tail
+  else {
+    process_table->tail->next->previous = process_data_node;
+    process_data_node->next = process_table->tail->next;
+    process_table->tail = process_data_node;
+  }
+
+  // Increment total_rows in ProcessTable after P
+  process_table->number_of_rows++;
 }
 
-// ProcessTable: Accessor Functions:
+/*
+ *filter_process_table_by_pid(const ProcessTable * processTable, const unsigned int process_id)
+ *return: ProcessTable *
+ */
 // ProcessTable * filer_process_table_by_pid (ProcessTable * process_table, const unsigned int process_id) {
 //   if (process_table == NULL) {
 //     printf("The process table is null. It canot be filtered.\n");
@@ -272,17 +310,29 @@ void add_process_data (ProcessTable * process_table, const Process * process) {
 //     if (cursor->)
 // }
 //
-//// ProcessTable:Boolean Functions:
-bool process_table_is_empty (ProcessTable * process_table) {
+
+/*
+ *process_table_is_empty
+ *return: bool
+ */
+bool process_table_is_empty (const ProcessTable * process_table) {
+
+  // Null ProcessTable is not empty. It does not exist
   if (process_table == NULL) {
-    printf("The process table is null. Null items cannot be empty");
+    printf("%s. Null items cannot be empty", PROCESS_TABLE_IS_NULL_MESSAGE);
     return false;
   }
-  if (process_table->totalProcesses == 0) return true;
+
+  // Checking if ProcessTable is empty by number of rows
+  if (process_table->number_of_rows == 0) return true;
+
+  //T Checking if ProcessTable is empty by head or tail being null
   return process_table->head == NULL ||
     ((process_table->head == process_table-> tail) && process_table->tail == NULL);
 }
-//// ProcessTable: ToString Function:
-//const char * process_table_to_string (ProcessTable * process_table);
-//
-//#endif //PROCESS_TABLE
+
+/*
+ *process_table_to_string (ProcessTable * process_table)
+ *return: const char *
+ */
+
