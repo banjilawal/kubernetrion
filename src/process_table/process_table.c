@@ -255,7 +255,7 @@ void destroy_process_table (ProcessTable * process_table) {
  *return: void
  *return: void
  */
-void add_process_data (ProcessTable * process_table, ProcessDataNode * process_data_node) {
+void add_process_data_node_to_table (ProcessTable * process_table, ProcessDataNode * process_data_node) {
 
   // Cannot add to a null ProcessTable
   if (process_table == NULL) {
@@ -289,27 +289,41 @@ void add_process_data (ProcessTable * process_table, ProcessDataNode * process_d
  *filter_process_table_by_pid(const ProcessTable * processTable, const unsigned int process_id)
  *return: ProcessTable *
  */
-// ProcessTable * filer_process_table_by_pid (ProcessTable * process_table, const unsigned int process_id) {
-//   if (process_table == NULL) {
-//     printf("The process table is null. It canot be filtered.\n");
-//     return NULL;
-//   }
-//   if (process_table_is_empty(process_table)) {
-//     printf("The process table is empty. It can't be filtered.\n");
-//     return NULL;
-//   }
-//
-//   ProcessTable * matches = create_process_table();
-//   if (matches == NULL) {
-//     printf("Failed to allocate memory for process table filter results");
-//     return NULL;
-//   }
-//
-//   ProcessDataNode * cursor = process_table->head;
-//   while (cursor != NULL) {
-//     if (cursor->)
-// }
-//
+ProcessTable * filer_process_table_by_pid (const ProcessTable * process_table, const unsigned int process_id) {
+
+  // If ProcessTable is null there is nothing to filter
+  if (process_table == NULL) {
+    printf("%s. It cannot be filtered.\n", PROCESS_TABLE_IS_NULL_MESSAGE);
+    return NULL;
+  }
+
+  //
+  if (process_table_is_empty(process_table)) {
+    printf("%s. It can't be filtered.\n", PROCESS_TABLE_IS_EMPTY_MESSAGE);
+    return NULL;
+  }
+
+  // Create a ProcessTable to hold records matching process_id
+  ProcessTable * matches = create_process_table();
+
+  // If matches is null the memory allocation failed, Assure matches is destroy and return
+  if (matches == NULL) {
+    printf("%s for storing pid filter results", PROCESS_TABLE_IS_NULL_MESSAGE);
+    destroy_process_table(matches);
+    matches = NULL;
+    return NULL;
+  }
+
+  ProcessDataNode * cursor = process_table->head;
+  while (cursor != NULL) {
+    if (cursor->process_record->pid == process_id) {
+      add_process_data_node_to_table(matches, copy_process_data_node(cursor));
+    }
+    cursor = cursor->next;
+  }
+  return matches;
+}
+
 
 /*
  *process_table_is_empty

@@ -19,6 +19,7 @@
 #define PROCESS_DATA_NODE_MEMORY_ALLOCATION_FAILED_MESSAGE "ProcessNode memory allocation failed"
 
 #define PROCESS_TABLE_IS_NULL_MESSAGE "The ProcessTable is NULL"
+#define PROCESS_TABLE_IS_EMPTY_MESSAGE "The ProcessTable is empty"
 #define PROCESS_TABLE_MEMORY_ALLOCATION_FAILED_MESSAGE "ProcessTable memory allocation failed"
 
 /*=== The ProcessRecord Data Type and its Functions ===*/
@@ -67,7 +68,7 @@ ProcessTable * create_process_table ();
 void destroy_process_table (ProcessTable * process_table);
 
 // ProcessTable: Mutator Functions:
-void add_process_data_node_to_table (ProcessTable * process_table, const ProcessDataNode * process_data_node);
+void add_process_data_node_to_table ( ProcessTable * process_table, ProcessDataNode * process_data_node);
 
 
 // ProcessTable: Accessor Functions:
