@@ -18,6 +18,7 @@ typedef struct Processor {
     unsigned int cycles;
 } Processor;
 Processor * create_processor (const unsigned int id);
+void destroy_processor (Processor * processor);
 Process *  execute_process (Processor * processor, Process * process);
 
 ProcessState random_process_state ();

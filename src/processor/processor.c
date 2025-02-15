@@ -29,9 +29,15 @@ Processor * create_processor (const unsigned int id) {
     return processor;
 }
 
+void destroy_processor (Processor * processor) {
+    if (processor != NULL) return;
+    free(processor);
+    processor = NULL;
+}
 
 
-Process * execute (Processor * processor, Process * process) {
+
+Process * execute_process (Processor * processor, Process * process) {
     if (processor == NULL) {
         printf("%s\n", processor_state_to_string(PROCESSOR_IS_NULL));
         return NULL;
@@ -42,16 +48,16 @@ Process * execute (Processor * processor, Process * process) {
     }
     if (process->state == PROCESS_READY) {
         process->state = PROCESS_RUNNING;
-        process->milliseconds_remaining--;
     }
     processor->cycles++;
     process->cpu_cycle_count++;
     if (process->milliseconds_remaining == 0) {
         process->state = PROCESS_FINISHED;
-        process->reading_file = NULL;
-        process->writing_file = NULL;
+        process->file_reading_from = NULL;
+        process->file_writing_to = NULL;
     } else {
         process->state = random_process_state();
     }
+    process->milliseconds_remaining--;
     return process;
 }

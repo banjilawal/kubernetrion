@@ -93,10 +93,4 @@ void destroy_priority_process_queue (PriorityProcessQueue * process_queue);
 bool join_priority_process_queue (const PriorityProcessQueue * priority_queue, Process * process);
 Process * exit_priority_process_queue (const PriorityProcessQueue * priority_queue);
 
-// PriorityProcessQueue: Accessor Functions:
-// NONE
-// PriorityProcessQueue: Boolean Functions:
-// NONE
-// PriorityProcessQueue: ToString Functions:
-// NONE
 #endif //PROCESS_QUEUE_H

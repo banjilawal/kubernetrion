@@ -14,6 +14,7 @@
 #include <time.h>
 
 #include "process.h"
+#include "process_queue.h"
 
 #define MAX_MILLISECONDS 20
 #define MIN_MILLISECONDS 5
@@ -23,6 +24,7 @@
 
 const char * random_process_name ();
 enum ProcessState random_process_state ();
+ProcessQueue * generate_process_queue (unsigned int number_of_processes);
 unsigned int random_priority();
 unsigned int random_milliseconds();
 

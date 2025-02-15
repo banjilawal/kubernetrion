@@ -5,11 +5,8 @@
 #include "process_queue.h"
 
 
-
-
-/*=== ProcessQueueState Enum and Functions ===*/
-
-// ProcessQueueState: toString
+/*
+ *process_queue_state_to_string (co
 const char * process_queue_state_to_string(const enum ProcessQueueState process_queue_state) {
     switch (process_queue_state) {
         case PROCESS_QUEUE_IS_EMPTY: return "ProcessQueue is empty";
@@ -24,7 +21,7 @@ const char * process_queue_state_to_string(const enum ProcessQueueState process_
 
 // ProcessQueue: Creation functions:
 ProcessQueue * create_process_queue() {
-    ProcessQueue * process_queue = (ProcessQueue *) malloc(sizeof(ProcessQueue));
+    ProcessQueue * process_queue = (ProcessQueue *) malloc(ProcessQueue);
     if (process_queue == NULL) {
         printf("%s.\n", process_queue_state_to_string(PROCESS_QUEUE_MEMORY_ALLOCATION_FAILED));
         return NULL;
@@ -321,13 +318,4 @@ Process * exit_priority_process_queue (const PriorityProcessQueue * priority_que
   }
   return exit_process_queue(priority_queue->queue);
 }
-
-// PriorityProcessQueue: Accessor Functions:
-// NONE
-
-// PriorityProcessQueue: Boolean Functions:
-// NONE
-
-// PriorityProcessQueue: ToString Functions:
-// NONE
 

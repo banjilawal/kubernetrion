@@ -9,6 +9,7 @@
 #include "process.h"
 #include "process_generator.h"
 #include "process_names.h"
+#include "process_queue.h"
 
 unsigned int nextId = 1;
 
@@ -54,21 +55,31 @@ Process * random_process(Process * parent) {
     return process;
 }
 
-int main(void) {
-    srand(time(NULL));
-    Process * root = random_process(NULL);
-    Process * child = random_process(root);
-    printf("generated process:%s\n", process_to_string(root));
-    printf("generated process:%s\n", process_to_string(child));
+ProcessQueue * generate_process_queue (const unsigned int number_of_processes) {
+    ProcessQueue * queue = create_process_queue();
 
-    Process * previous = child;
-    for (int i = 0; i < 10; i++) {
-        Process * next = random_process(previous);
-        if (i % 2 == 0) {
-            previous = next;
-        } else { previous = random_process(NULL); }
-        printf("%d\n\tPREVIOUS:%s\n\tNEXT:%s\n", i, process_to_string(previous), process_to_string(next));
+    for (int i = 0; i < number_of_processes; i++) {
+        Process * process = random_process(NULL);
+        enter_process_queue(queue, random_process(NULL));
     }
-    destroy_process(root);
-    return 0;
+    return queue;
 }
+//
+// int main(void) {
+//     srand(time(NULL));
+//     Process * root = random_process(NULL);
+//     Process * child = random_process(root);
+//     printf("generated process:%s\n", process_to_string(root));
+//     printf("generated process:%s\n", process_to_string(child));
+//
+//     Process * previous = child;
+//     for (int i = 0; i < 10; i++) {
+//         Process * next = random_process(previous);
+//         if (i % 2 == 0) {
+//             previous = next;
+//         } else { previous = random_process(NULL); }
+//         printf("%d\n\tPREVIOUS:%s\n\tNEXT:%s\n", i, process_to_string(previous), process_to_string(next));
+//     }
+//     destroy_process(root);
+//     return 0;
+// }
