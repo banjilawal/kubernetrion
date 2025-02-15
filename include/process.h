@@ -34,8 +34,8 @@ extern "C" {
 
 #define PROCESS_READY_MESSAGE "Process is ready"
 #define PROCESS_RUNNING_MESSAGE "Process is running"
-#define PROCESS_READING_FILE_BLOCKED_MESSAGE "Reading file blocked"
-#define PROCESS_WRITING_FILE_BLOCKED_MESSAGE "Writing blocked"
+#define PROCESS_READING_FILE_IS_BLOCKED_MESSAGE "Reading file is blocked"
+#define PROCESS_WRITING_FILE_IS_BLOCKED_MESSAGE "Writing blocked"
 #define PROCESS_WAITING_EVENT_MESSAGE "Process is waiting event"
 #define PROCESS_FINISHED_MESSAGE "Process is finished"
 #define PROCESS_IS_NULL_MESSAGE "Process is NULL!"
@@ -43,12 +43,14 @@ extern "C" {
 #define PROCESS_WRITING_FILE_MESSAGE "Process is writing file"
 #define PROCESS_MEMORY_ALLOCATION_FAILED_MESSAGE "Process memory allocation failed!"
 #define PROCESS_PRIORITY_OUT_OF_RANGE_ERROR_MESSAGE "Process priority is out of range"
+#define NULL_PROCESS_ERROR_MESSAGE "Process cannot be null!"
 #define PROCESS_NAME_IS_NULL_ERROR_MESSAGE "Process name cannot be null"
 #define UNDEFINED_PROCESS_STATE_MESSAGE "The Process state is undefined!"
 
 #define PROCESS_NODE_IS_NULL_MESSAGE "ProcessNode is NULL!"
 #define PROCESS_NODE_MEMORY_ALLOCATION_FAILED_MESSAGE "ProcessNode memory allocation failed!"
 #define UNDEFINED_PROCESS_NODE_STATE_MESSAGE "The ProcessNode state is undefined!"
+#define PROCESS_NODE_CREATION_FAILED_MESSAGE "ProcessNode creation failed!"
 
 /*==== Enums ====*/
 
@@ -62,10 +64,14 @@ typedef enum ProcessPriority {
 
 typedef enum ProcessErrorCode {
     PROCESS_OPERATION_SUCCESS = 0,
-    PROCESS_MEMORY_ALLOCATION_FAILURE = 1,
-    PROCESS_IS_NULL_ILLEGAL_ARGUMENT = 2,
-    PROCESS_NAME_IS_NULL_ILLEGAL_ARGUMENT = 3,
-    PROCESS_PRIORITY_OUT_OF_RANGE = 4
+    PROCESS_MEMORY_ALLOCATION_FAILURE_ERROR = 1,
+    PROCESS_IS_NULL_ILLEGAL_ARGUMENT_ERROR = 2,
+    PROCESS_NAME_IS_NULL_ILLEGAL_ARGUMENT_ERROR = 3,
+    PROCESS_PRIORITY_OUT_OF_RANGE_ERROR = 4,
+    PROCESS_READING_FILE_IS_BLOCKED_EXCEPTION = 5,
+    PROCESS_WRITING_FILE_IS_BLOCKED_EXCEPTION = 6,
+    PROCESS_RELEASING_FILE_FAILED_EXCEPTION = 7,
+    PROCESS_NODE_CREATION_FAILED_EXCEPTION = 8,
 } ProcessErrorCode;
 
 /*
@@ -118,11 +124,11 @@ Process* create_process(
 );
 
 void destroy_process(Process *process);
-void destroy_child_process(Process *parent, Process *child);
+void destroy_child_process(Process *parent_process);
 
 File* release_file(Process *process);
-unsigned int read_from_file(Process *process, File *file);
-unsigned int write_to_file(Process *process, File *file, unsigned int bytes_to_write);
+unsigned int read_file(Process *process, File *file);
+unsigned int write_file(Process *process, File *file, unsigned int bytes_to_write);
 
 bool processes_are_equal(const Process *a, const Process *b);
 char* process_to_string(const Process *process);
@@ -132,8 +138,6 @@ typedef enum ProcessNodeState {
     PROCESS_NODE_IS_NULL,
     PROCESS_NODE_MEMORY_ALLOCATION_FAILED
 } ProcessNodeState;
-
-/* ProcessNodeState Functions */
 char* process_node_state_to_string(const ProcessNodeState process_node_state);
 
 /*=== The ProcessNode Data Type and It's Functions ===*/
@@ -146,6 +150,7 @@ typedef struct ProcessNode {
 /* ProcessNode Functions */
 ProcessNode* create_process_node(Process *process);
 void destroy_process_node(ProcessNode *process_node);
+
 
 #endif //PROCESS_H
 
