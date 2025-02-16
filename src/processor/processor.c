@@ -8,9 +8,9 @@
 #include "processor.h"
 #include "process_generator.h"
 
-const char * processor_state_to_string(const enum ProcessorState state) {
-    switch (state) {
-        case EXECUTING: return "Processor Executing";
+char * processor_state_to_string(const enum ProcessorState processor_state) {
+    switch (processor_state) {
+        case PROCESSOR_EXECUTING: return "Processor Executing";
         case PROCESSOR_FAILED: return "Processor Failed";
         case PROCESSOR_IS_NULL: return "Processor is NULL";
         case PROCESSOR_MEMORY_ALLOCATION_FAILED: return "Processor Memory Allocation Failed";
@@ -53,8 +53,7 @@ Process * execute_process (Processor * processor, Process * process) {
     process->cpu_cycle_count++;
     if (process->milliseconds_remaining == 0) {
         process->state = PROCESS_FINISHED;
-        process->file_reading_from = NULL;
-        process->file_writing_to = NULL;
+        process->file = NULL;
     } else {
         process->state = random_process_state();
     }

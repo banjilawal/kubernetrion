@@ -124,12 +124,20 @@ bool set_file_reader (File * file, Process * process) {
     if (file == NULL) return false;
     if (processes_are_equal(file->reader, process)) return true;
     if (file->reader != NULL) return false;
-    set_reading_file(process, file);
-    return false;
+
+    file->reader = process;
+    process->file = file;
+    return true;
 }
 
-bool set_file_writer (File * file, Process * writer, const unsigned int megabytes_to_write) {
-    return false;
+bool set_file_writer (File * file, Process * process, const unsigned int megabytes_to_write) {
+    if (file == NULL) return false;
+    if (processes_are_equal(file->writer, process)) return true;
+    if (file->reader != NULL) return false;
+
+    file->writer = process;
+    process->file = file;
+    return true;
 }
 
 // File: Accessor Functions

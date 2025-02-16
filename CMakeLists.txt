@@ -31,4 +31,5 @@ add_executable(kubernetrion
         include/process_names.h
         src/stats/process_stats.c
         src/process_table/process_table.c
+        include/scheduler.h
 )

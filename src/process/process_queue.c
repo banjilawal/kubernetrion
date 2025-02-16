@@ -5,36 +5,65 @@
 #include "process_queue.h"
 
 
+
 /*
- *process_queue_state_to_string (co
-const char * process_queue_state_to_string(const enum ProcessQueueState process_queue_state) {
+ * Function: process_queue_state_to_string
+ * ----------------------------------------
+ * @description:
+ * String describing process queue's state
+ * @param: process_queue_state: ProcessQueueState
+ *
+ * @return: char*
+ */
+char* process_queue_state_to_string(const ProcessQueueState process_queue_state) {
     switch (process_queue_state) {
-        case PROCESS_QUEUE_IS_EMPTY: return "ProcessQueue is empty";
-        case PROCESS_QUEUE_IS_NOT_EMPTY: return "ProcessQueue is not empty";
-        case PROCESS_QUEUE_IS_NULL: return "ProcessQueue is NULL!";
-        case PROCESS_QUEUE_MEMORY_ALLOCATION_FAILED: return "ProcessQueue memory allocation failed!";
-        default: return "Unknown ProcessQueueState process_queue_state!";
+        case PROCESS_QUEUE_IS_EMPTY: return PROCESS_QUEUE_IS_EMPTY_MESSAGE;
+        case PROCESS_QUEUE_IS_NOT_EMPTY: return PROCESS_QUEUE_IS_NOT_EMPTY_MESSAGE;
+        case PROCESS_QUEUE_IS_NULL: return PROCESS_QUEUE_IS_NULL_MESSAGE;
+        case PROCESS_QUEUE_MEMORY_ALLOCATION_FAILED: return PROCESS_IS_NULL_MESSAGE;
+        case PROCESS_QUEUE_IS_FULL: return PROCESS_QUEUE_IS_FULL_MESSAGE;
+        case PROCESS_QUEUE_PUSH_OPERATION_FAILED: return PROCESS_QUEUE_PUSH_OPERATION_FAILED_MESSAGE;
+        case PROCESS_QUEUE_POP_OPERATION_FAILED: return PROCESS_QUEUE_POP_OPERATION_FAILED_MESSAGE;
+        default:
+            fprintf(stderr, "%s\n", UNDEFINED_PROCESS_QUEUE_STATE_MESSAGE);
+            return UNDEFINED_PROCESS_QUEUE_STATE_MESSAGE;
     }
 }
 
-/*=== The ProcessQueue Data Type and its Functions ===*/
-
-// ProcessQueue: Creation functions:
+/*
+ *  Function: create_process_queue
+ *  -------------------------------
+ *  @definition:
+ *  Creates an empty process queue
+ *  -------------------------------
+ *  @return ProcessQueue*
+ */
 ProcessQueue * create_process_queue() {
-    ProcessQueue * process_queue = (ProcessQueue *) malloc(ProcessQueue);
+    ProcessQueue * process_queue = (ProcessQueue *) calloc(1, sizeof(ProcessQueue));
     if (process_queue == NULL) {
-        printf("%s.\n", process_queue_state_to_string(PROCESS_QUEUE_MEMORY_ALLOCATION_FAILED));
+        fprintf(stderr, "%s\n", PROCESS_QUEUE_MEMORY_ALLOCATION_FAILED_MESSAGE);
+        free(process_queue);
         return NULL;
     }
+
+    /* Initialize ProcessQueue fields */
     process_queue->head = NULL;
     process_queue->tail = NULL;
     process_queue->size = 0;
     process_queue->state = PROCESS_QUEUE_IS_EMPTY;
+
+    /* Return ProcessQueue instance */
     return process_queue;
 }
 
 // ProcessQueue: Destruction functions:
 void destroy_process_queue(ProcessQueue * process_queue) {
+    if (process_queue == NULL) return;
+
+    ProcessNode* cursor = process_queue->head;
+    while (cursor != NULL) {
+
+    }
   free(process_queue);
 }
 
@@ -90,14 +119,14 @@ Process * exit_process_queue(ProcessQueue *process_queue) {
 }
 
 // ProcessQueue: Accessor functions:
-Process * find_process_by_id(const ProcessQueue *process_queue, const unsigned int process_id) {
+Process* find_process_by_id(const ProcessQueue *process_queue, const unsigned int process_id) {
     if (process_queue == NULL) {
         printf("%s\n", process_queue_state_to_string(PROCESS_QUEUE_IS_NULL));
         return NULL;
     }
     if (process_queue_is_empty(process_queue)) { return NULL; }
 
-    const ProcessNode * cursor = process_queue->head;
+    const ProcessNode *cursor = process_queue->head;
     while (cursor != NULL) {
         if (cursor->process->id == process_id) {
             return cursor->process;
@@ -157,7 +186,7 @@ bool process_queue_is_empty(const ProcessQueue* queue) {
 }
 
 // ProcessQueue: ToString Functions
-const char * process_queue_to_string(const ProcessQueue * process_queue) {
+char * process_queue_to_string(const ProcessQueue * process_queue) {
     if (process_queue == NULL) {
         printf("%s\n", process_queue_state_to_string(PROCESS_QUEUE_IS_NULL));
         return NULL;

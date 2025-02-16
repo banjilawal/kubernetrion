@@ -6,21 +6,20 @@
 #define PROCESSOR_H
 
 typedef enum ProcessorState {
-    EXECUTING,
+    PROCESSOR_EXECUTING,
     PROCESSOR_FAILED,
     PROCESSOR_IS_NULL,
     PROCESSOR_MEMORY_ALLOCATION_FAILED
-} ProcessorErrorState;
-const char * processor_state_to_string(const enum ProcessorState processor_state);
+} ProcessorState;
+char* processor_state_to_string(ProcessorState processor_state);
 
 typedef struct Processor {
     unsigned int id;
     unsigned int cycles;
 } Processor;
-Processor * create_processor (const unsigned int id);
-void destroy_processor (Processor * processor);
-Process *  execute_process (Processor * processor, Process * process);
 
-ProcessState random_process_state ();
+Processor* create_processor(const unsigned int processor_id);
+void destroy_processor(Processor *processor);
+Process*  execute_process(Processor *processor, Process *process);
 
 #endif //PROCESSOR_H

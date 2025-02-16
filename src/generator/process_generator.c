@@ -43,14 +43,13 @@ Process * random_process(Process * parent) {
     const unsigned int id = nextId;
     nextId++;
 
-    const char * name = random_process_name();
+    const char *name = random_process_name();
     const unsigned int priority = random_priority();
     const unsigned int milliseconds_remaining = random_milliseconds();
-    File * reading_file = NULL;
-    File * writing_file = NULL;
-    Process * child = NULL;
+    File *file = NULL;
+    Process *child = NULL;
 
-    Process * process = create_process(id, name, parent, child, reading_file, writing_file, priority, milliseconds_remaining);
+    Process * process = create_process(id, name, parent, child, file, priority, milliseconds_remaining);
     process->state = random_process_state();
     return process;
 }

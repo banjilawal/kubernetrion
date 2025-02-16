@@ -16,6 +16,7 @@ extern "C" {
 #include <stddef.h>
 
 #include "file.h"
+#include "process_queue.h"
 
 /*
  * Forward declarations to avoid circular dependencies. They might not need to be in both files with the
@@ -151,7 +152,22 @@ typedef struct ProcessNode {
 ProcessNode* create_process_node(Process *process);
 void destroy_process_node(ProcessNode *process_node);
 
+typedef struct ProcessLinkedList {
+    int size;
+    ProcessNode *head;
+    ProcessNode *tail;
+} ProcessLinkedList;
 
+ProcessLinkedList* create_process_list();
+void destroy_process_list(ProcessLinkedList *process_linked_list);
+
+unsigned int insert_process_at_list_head(ProcessLinkedList *process_list, Process *process);
+unsigned int insert_process_at_list_tail(ProcessLinkedList *process_list, Process *process);
+
+Process* remove_process_from_list(ProcessLinkedList *process_list, const unsigned int process_id);
+Process* search_process_list(const ProcessLinkedList *process_list, const unsigned int process_id);
+
+bool is_empty_process_list(const ProcessLinkedList *process_list);
 #endif //PROCESS_H
 
 // #ifndef PROCESS_H

@@ -348,6 +348,15 @@ char * process_node_state_to_string(const ProcessNodeState process_node_state) {
 /*
  * Function: create_process_node
  * ------------------------------
+ * @description
+ * Creates a ProcessNode
+ * --------------------------------
+ * @precondition
+ * process is not null
+ * ---------------------------------
+ * @postcondition
+ * ProcessNode contains Process that is not changed.
+ * -------------------------------------------------
  * @param process: Process*
  *
  * @return ProcessNode*
@@ -381,7 +390,8 @@ ProcessNode* create_process_node(Process *process) {
  * Function: destroy_process_node
  * -------------------------------
  * Destroys and cleans up a processNode. Links destruction target's next and previous
- * links to each other prior to destruction.
+ * links to each other prior to destruction. The function preserves the target's
+ * neighboring ProcessNodes
  * ---------------------------------------------------------------------------------
  * @param process_node: ProcessNode*
  *
@@ -403,4 +413,223 @@ void destroy_process_node(ProcessNode *process_node) {
     /* Destroy and cleanup process then free memory assigned to process_node*/
     destroy_process(process_node->process);
     free(process_node);
+}
+
+/*
+ * Function: create_process_list
+ * -------------------------------------
+ * @definition
+ * Creates an empty linked list of ProcessNodes
+ * ----------------------------------------------
+ * @return ProcessLinkedList
+ */
+ProcessLinkedList* create_process_list() {
+    ProcessLinkedList *process_list = (ProcessLinkedList*) calloc(1, sizeof(ProcessLinkedList));
+
+    if (process_list == NULL) {
+        fprintf(stderr,"ProcessLinkedList memory allocation failed\n");
+        free(process_list);
+        return NULL;
+    }
+
+    /* Initialize the ProcessLinkedList */
+    process_list->head = NULL;
+    process_list->tail = NULL;
+    process_list->size = 0;
+
+    /* Return the process_linked_list */
+    return process_list;
+}
+
+/*
+ * Function: insert_process_at_list_head
+ * ----------------------------------------------
+ * @definition
+ * Adds unique Process to ProcessLinkedList at index then increments the size
+ * --------------------------------------------
+ * @param process_list: ProcessLinkedList
+ * @pram process: Process
+ *
+ * @return unsigned int
+ */
+unsigned int insert_process_at_list_head(ProcessLinkedList *process_list, Process *process) {
+    if (process_list == NULL) {
+        fprintf(stderr, "Cannot add process it null ProcessList\n");
+        return  10;
+    }
+
+    if (process == NULL) {
+        fprintf(stderr, "Cannot add null process to ProcessList\n");
+        return 11;
+    }
+
+    if (search_process_list(process_list, process->id) != NULL) {
+        fprintf(stderr, "Process already exists in the process list\n");
+        return 13;
+    }
+
+    ProcessNode *process_node = create_process_node(process);
+    if (process_node == NULL) {
+        fprintf(stderr, "Failed to create ProcessNode. ProcessLinkedList add operation failed\n");
+        free(process_node);
+        return 14;
+    }
+
+    if (is_empty_process_list(process_list)) {
+        process_list->tail = process_node;
+        process_node->next = process_list->tail;
+    } else {
+        process_list->head->next->previous = process_node;
+        process_node->next = process_list->head->next;
+    }
+
+    process_node->previous = process_list->head;
+    process_list->head = process_node;
+    process_list->size++;
+    return 0;
+}
+
+/*
+ * Function:insert_process_at_list_tail
+ * ----------------------------------------------
+ * @definition
+ * Adds unique Process to ProcessLinkedList at the tail then increments the size
+ * -----------------------------------------------------------------------------
+ * @param process_list: ProcessLinkedList
+ * @pram process: Process
+ *
+ * @return unsigned int
+ */
+unsigned int add_to_process_linked_list_at_tail(ProcessLinkedList *process_list, Process *process) {
+    if (process_list == NULL) {
+        fprintf(stderr, "Cannot add process it null ProcessList\n");
+        return  10;
+    }
+
+    if (process == NULL) {
+        fprintf(stderr, "Cannot add null process to ProcessList\n");
+        return 11;
+    }
+
+    if (search_process_list(process_list, process->id) != NULL) {
+        fprintf(stderr, "Process already exists in the process list\n");
+        return 13;
+    }
+
+    ProcessNode *process_node = create_process_node(process);
+    if (process_node == NULL) {
+        fprintf(stderr, "Failed to create ProcessNode. ProcessLinkedList add operation failed\n");
+        free(process_node);
+        return 14;
+    }
+
+    if (is_empty_process_list(process_list)) {
+        process_list->head = process_node;
+        process_node->previous = process_list->head;
+    } else {
+        process_node->previous = process_list->tail->previous;
+        process_list->tail->previous->next = process_node;
+    }
+
+    process_node->next = process_list->tail;
+    process_list->tail = process_node;
+    process_list->size++;
+    return 0;
+}
+
+/*
+ * Function: destroy_process_list
+ * -------------------------------
+ * @definition
+ * Destroy ProcessLinkedList and cleanup afterwards.
+ * --------------------------------------------------
+ *
+ * @return ProcessLinkedList
+ */
+void destroy_process_list(ProcessLinkedList *process_list) {
+    if (process_list == NULL) return;
+
+    const ProcessNode *cursor = process_list->head->next;
+    while (cursor != NULL) {
+        destroy_process_node(cursor->previous);
+        process_list->size--;
+        cursor = cursor->next;
+    }
+}
+
+/*
+ * Function: remove_process_from_list
+ * -------------------------------
+ * @definition
+ * Remove a process from the list cleanly then decrease the list's size
+ * ----------------------------------------------------------------------
+ * @param process_list: ProcessLinkedList
+ * @param process_id: const unsigned int
+ * @return ProcessLinkedList
+ */
+Process* remove_process_from_list(ProcessLinkedList *process_list, const unsigned int process_id) {
+    if (process_list == NULL) {
+        fprintf(stderr, "Cannot search process list null\n");
+        return NULL;
+    }
+    if (is_empty_process_list(process_list)) {
+        fprintf(stderr, "Process list is empty.\n");
+        return NULL;
+    }
+
+    ProcessNode *cursor = process_list->head;
+    while (cursor != NULL) {
+        if (cursor->process->id == process_id) {
+            cursor->previous->next = cursor->next;
+            cursor->next->previous = cursor->previous;
+
+            cursor->next = NULL;
+            cursor->previous = NULL;
+            Process *process = cursor->process;
+            free(cursor);
+            process_list->size--;
+
+            return process;
+        }
+        cursor = cursor->next;
+    }
+    return NULL;
+}
+
+bool is_empty_process_list(const ProcessLinkedList *process_list) {
+    if (process_list == NULL) {
+        fprintf(stderr, "Null ProcessLinkedList cannot be empty\n");
+        return false;
+    }
+    if (process_list->size == 0) return true;
+    return process_list->head == NULL || process_list->tail == NULL;
+}
+
+/*
+ * Function: destroy_process_node_list
+ * -------------------------------------
+ * @description
+ * ProcessNodes naturally form a linked list. This function destroys all nodes
+ * in the linked list recursively.
+ * ----------------------------------------------------------------------------
+ * @param process_node: ProcessNode*
+ *
+ * @return void
+ */
+void destroy_process_node_list(ProcessNode *process_node) {
+    if (process_node == NULL) return;
+    ProcessNode *forward_cursor = process_node;
+    ProcessNode *rearward_cursor = process_node;
+
+    /* Destroy ProcessNodes ahead of process_node */
+    while (forward_cursor->next != NULL) {
+        destroy_process_node_list(forward_cursor->next);
+    }
+
+    /* Destroy ProcessNodes behind process_node */
+    while (rearward_cursor->previous != NULL) {
+        destroy_process_node_list(rearward_cursor->previous);
+    }
+
+    destroy_process(process_node->process);
 }
