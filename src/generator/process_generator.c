@@ -9,7 +9,7 @@
 #include "process.h"
 #include "process_generator.h"
 #include "process_names.h"
-#include "process_queue.h"
+#include "process_list.h"
 
 unsigned int nextId = 1;
 
@@ -59,7 +59,7 @@ ProcessQueue * generate_process_queue (const unsigned int number_of_processes) {
 
     for (int i = 0; i < number_of_processes; i++) {
         Process * process = random_process(NULL);
-        enter_process_queue(queue, random_process(NULL));
+        push_onto_process_queue(queue, random_process(NULL));
     }
     return queue;
 }

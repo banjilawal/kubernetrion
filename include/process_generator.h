@@ -14,7 +14,7 @@
 #include <time.h>
 
 #include "process.h"
-#include "process_queue.h"
+#include "process_list.h"
 
 #define MAX_MILLISECONDS 20
 #define MIN_MILLISECONDS 5

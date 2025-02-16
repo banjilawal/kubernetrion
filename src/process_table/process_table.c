@@ -33,8 +33,8 @@ ProcessRecord * create_process_priority_record (const Process * process) {
     return NULL;
   }
 
-  process_record->name = (char *) get_process_name(process);;
-  process_record->pid = get_process_id(process);
+  process_record->name = process->name;;
+  process_record->pid = process->id;;
   process_record->milliseconds_remaining = process->milliseconds_remaining;
   process_record->cpu_cycle_count = process->cpu_cycle_count;
   process_record->priority = process->priority;

@@ -47,7 +47,7 @@ bool add_file (Directory * directory, File * file) {
     }
     if (file == NULL) {
         printf("Cannot null file to directory %s", directory->details->descriptor->name);
-        exit(NULL_FILE_ERROR_CODE);
+        exit(FILE_IS_NULL_ERROR_CODE);
     }
     return add_to_file_list(directory->files, file);
 }

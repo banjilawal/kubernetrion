@@ -29,7 +29,7 @@ const char * process_string_format = "Process["
  * @return void
  */
 void print_allocation_failure(const char *data_type) {
-    fprintf("Memory allocation for %s failed!\n", data_type);
+    fprintf(stderr, "Memory allocation for %s failed!\n", data_type);
 }
 
 
@@ -102,7 +102,6 @@ Process * create_process(
     Process * process = calloc(1, sizeof(Process));
     if (process == NULL) {
         fprintf(stderr, "%s\n", process_state_to_string(PROCESS_MEMORY_ALLOCATION_FAILED));
-        free(process);
         return NULL;
     }
 
@@ -113,6 +112,7 @@ Process * create_process(
     process->name =  strdup(name);
     if (process->name == NULL) {
         fprintf(stderr, "%s\n", PROCESS_NAME_IS_NULL_ERROR_MESSAGE);
+        if (process->file != NULL) free(process->file);
         free(process);
         return NULL;
     }
@@ -150,18 +150,19 @@ Process * create_process(
  *
  * @return void
  */
-void destroy_process(Process * process) {
+void destroy_process(Process **process) {
     if (process == NULL) return;
 
     /* Recursively destroy child processes */
-    destroy_process(process->child);
+    destroy_process(&(*process)->child);
 
     /* Release file */
-    release_file(process);
+    release_file(*process);
 
     /* Free the process*/
+    free((*process)->name);
     free(process);
-    process = NULL;
+    *process = NULL;
 }
 
 /*
@@ -176,8 +177,16 @@ void destroy_process(Process * process) {
  */
 void destroy_child_process(Process * parent_process) {
     if (parent_process == NULL) return;
-    if (parent_process->child == NULL) return;
-    destroy_process(parent_process->child);
+
+    Process *current_child = parent_process->child;
+    Process *next_child = NULL;
+
+    while (current_child != NULL) {
+        next_child = current_child->child;
+        destroy_process(&current_child);
+        current_child = next_child;
+    }
+    parent_process->child = NULL;
 }
 
 /*
@@ -197,15 +206,20 @@ unsigned int read_file(Process  *process, File *file) {
         return PROCESS_IS_NULL_ILLEGAL_ARGUMENT_ERROR;
     }
 
+    if (file == NULL) {
+        fprintf(stderr, "%s. File reading failed", file_state_to_string(FILE_IS_NULL));
+        return FILE_IS_NULL_ERROR_CODE;
+    }
+
     if (processes_are_equal(process, file->reader)) { return PROCESS_OPERATION_SUCCESS; }
-    else if (file->reader != NULL) {
+
+    if (file->reader != NULL) {
         fprintf(stderr, "%s. file in use by another process", PROCESS_READING_FILE_IS_BLOCKED_MESSAGE);
         return PROCESS_READING_FILE_IS_BLOCKED_EXCEPTION;
     }
-    else {
-        process->file = file;
-        return set_file_reader(file, process);
-    }
+
+    process->file = file;
+    return set_file_reader(file, process);
 }
 
 /*
@@ -221,20 +235,21 @@ unsigned int read_file(Process  *process, File *file) {
  * @return unsigned int
  */
 unsigned int write_file(Process *process, File *file, unsigned int bytes_to_write) {
+
     if (process == NULL) {
         fprintf(stderr, "%s. Process writing failed", NULL_PROCESS_ERROR_MESSAGE);
         return PROCESS_IS_NULL_ILLEGAL_ARGUMENT_ERROR;
     }
 
     if (processes_are_equal(process, file->writer)) { return PROCESS_OPERATION_SUCCESS; }
-    else if (file->reader != NULL) {
+
+    if (file->reader != NULL) {
         fprintf(stderr, "%s. file in use by another process", PROCESS_READING_FILE_IS_BLOCKED_MESSAGE);
         return PROCESS_WRITING_FILE_IS_BLOCKED_EXCEPTION;
     }
-    else {
-        process->file = file;
-        return set_file_writer(file, process, bytes_to_write);
-    }
+
+    process->file = file;
+    return set_file_writer(file, process, bytes_to_write);
 }
 
 /*
@@ -248,20 +263,33 @@ unsigned int write_file(Process *process, File *file, unsigned int bytes_to_writ
  * @return File*
  */
 File* release_file(Process * process) {
+
+    /* Handle case: process parameter is null */
     if (process == NULL) {
         fprintf(stderr, "%s. Process releasing failed", NULL_PROCESS_ERROR_MESSAGE);
         return NULL;
     }
+
+    /* Handle case: file parameter is null */
     if (process->file == NULL) {
-        fprintf(stderr, "%s. File releasing failed", file_state_to_string(FILE_IS_NULL));
+        fprintf(stderr, "%s. No file is associated with the process", file_state_to_string(FILE_IS_NULL));
         return NULL;
     }
+
+    File *file = process->file;
+
+    /* Check if process is reader or writer to correctly disassociate process from file */
+    if (file->reader == process) { file->reader = NULL; }
+    else if (file->writer == process) { file->writer = NULL; }
     else {
-        File *file = process->file;
-        process->file = NULL;
-        file->writer = NULL;
-        return file;
+        fprintf(stderr, "Process is not associated with file's reader or writer\n");
     }
+
+    /* Nullify process' file */
+    process->file = NULL;
+
+    /* Return file */
+    return file;
 }
 
 /*
@@ -276,7 +304,7 @@ File* release_file(Process * process) {
  * @return bool
  */
 bool processes_are_equal (const Process * a, const Process * b) {
-    if (&a == &b) return true;
+    if (a == b) return true;
     if (a == NULL || b == NULL) return false;
     return a->id == b->id;
 }
@@ -307,6 +335,9 @@ char * process_to_string(const Process * process) {
     unsigned int parent_id = 0;
     if (process->parent != NULL) { parent_id = process->parent->id; }
 
+    const char *file_name = process->file == NULL
+        || process->file->descriptor == NULL ? "None" : process->file->descriptor->name;
+
     snprintf(
         string,
         buffer_size,
@@ -319,7 +350,7 @@ char * process_to_string(const Process * process) {
         process->priority,
         process->milliseconds_remaining,
         process->cpu_cycle_count,
-        file_to_string(process->file)
+        file_name
     );
     return string;
 }
@@ -402,234 +433,29 @@ void destroy_process_node(ProcessNode *process_node) {
     /* If process_node is null nothing to do. Return */
     if (process_node == NULL) return;
 
-    /* Set process_node's link pointing to each other */
-    process_node->previous->next = process_node->next;
-    process_node->next->previous = process_node->previous;
-
-    /* Set next and previous links to null */
-    process_node->next = NULL;
-    process_node->previous = NULL;
-
-    /* Destroy and cleanup process then free memory assigned to process_node*/
-    destroy_process(process_node->process);
-    free(process_node);
-}
-
-/*
- * Function: create_process_list
- * -------------------------------------
- * @definition
- * Creates an empty linked list of ProcessNodes
- * ----------------------------------------------
- * @return ProcessLinkedList
- */
-ProcessLinkedList* create_process_list() {
-    ProcessLinkedList *process_list = (ProcessLinkedList*) calloc(1, sizeof(ProcessLinkedList));
-
-    if (process_list == NULL) {
-        fprintf(stderr,"ProcessLinkedList memory allocation failed\n");
-        free(process_list);
-        return NULL;
-    }
-
-    /* Initialize the ProcessLinkedList */
-    process_list->head = NULL;
-    process_list->tail = NULL;
-    process_list->size = 0;
-
-    /* Return the process_linked_list */
-    return process_list;
-}
-
-/*
- * Function: insert_process_at_list_head
- * ----------------------------------------------
- * @definition
- * Adds unique Process to ProcessLinkedList at index then increments the size
- * --------------------------------------------
- * @param process_list: ProcessLinkedList
- * @pram process: Process
- *
- * @return unsigned int
- */
-unsigned int insert_process_at_list_head(ProcessLinkedList *process_list, Process *process) {
-    if (process_list == NULL) {
-        fprintf(stderr, "Cannot add process it null ProcessList\n");
-        return  10;
-    }
-
-    if (process == NULL) {
-        fprintf(stderr, "Cannot add null process to ProcessList\n");
-        return 11;
-    }
-
-    if (search_process_list(process_list, process->id) != NULL) {
-        fprintf(stderr, "Process already exists in the process list\n");
-        return 13;
-    }
-
-    ProcessNode *process_node = create_process_node(process);
-    if (process_node == NULL) {
-        fprintf(stderr, "Failed to create ProcessNode. ProcessLinkedList add operation failed\n");
-        free(process_node);
-        return 14;
-    }
-
-    if (is_empty_process_list(process_list)) {
-        process_list->tail = process_node;
-        process_node->next = process_list->tail;
-    } else {
-        process_list->head->next->previous = process_node;
-        process_node->next = process_list->head->next;
-    }
-
-    process_node->previous = process_list->head;
-    process_list->head = process_node;
-    process_list->size++;
-    return 0;
-}
-
-/*
- * Function:insert_process_at_list_tail
- * ----------------------------------------------
- * @definition
- * Adds unique Process to ProcessLinkedList at the tail then increments the size
- * -----------------------------------------------------------------------------
- * @param process_list: ProcessLinkedList
- * @pram process: Process
- *
- * @return unsigned int
- */
-unsigned int add_to_process_linked_list_at_tail(ProcessLinkedList *process_list, Process *process) {
-    if (process_list == NULL) {
-        fprintf(stderr, "Cannot add process it null ProcessList\n");
-        return  10;
-    }
-
-    if (process == NULL) {
-        fprintf(stderr, "Cannot add null process to ProcessList\n");
-        return 11;
-    }
-
-    if (search_process_list(process_list, process->id) != NULL) {
-        fprintf(stderr, "Process already exists in the process list\n");
-        return 13;
-    }
-
-    ProcessNode *process_node = create_process_node(process);
-    if (process_node == NULL) {
-        fprintf(stderr, "Failed to create ProcessNode. ProcessLinkedList add operation failed\n");
-        free(process_node);
-        return 14;
-    }
-
-    if (is_empty_process_list(process_list)) {
-        process_list->head = process_node;
-        process_node->previous = process_list->head;
-    } else {
-        process_node->previous = process_list->tail->previous;
-        process_list->tail->previous->next = process_node;
-    }
-
-    process_node->next = process_list->tail;
-    process_list->tail = process_node;
-    process_list->size++;
-    return 0;
-}
-
-/*
- * Function: destroy_process_list
- * -------------------------------
- * @definition
- * Destroy ProcessLinkedList and cleanup afterwards.
- * --------------------------------------------------
- *
- * @return ProcessLinkedList
- */
-void destroy_process_list(ProcessLinkedList *process_list) {
-    if (process_list == NULL) return;
-
-    const ProcessNode *cursor = process_list->head->next;
+    ProcessNode *cursor = process_node;
     while (cursor != NULL) {
-        destroy_process_node(cursor->previous);
-        process_list->size--;
-        cursor = cursor->next;
+        ProcessNode *next_node = cursor->next;
+        destroy_process_node(cursor);
+        free(cursor);
+        cursor = next_node;
     }
 }
 
 /*
- * Function: remove_process_from_list
- * -------------------------------
+ * Function: process_nodes_are_equal
+ * ---------------------------------
  * @definition
- * Remove a process from the list cleanly then decrease the list's size
- * ----------------------------------------------------------------------
- * @param process_list: ProcessLinkedList
- * @param process_id: const unsigned int
- * @return ProcessLinkedList
- */
-Process* remove_process_from_list(ProcessLinkedList *process_list, const unsigned int process_id) {
-    if (process_list == NULL) {
-        fprintf(stderr, "Cannot search process list null\n");
-        return NULL;
-    }
-    if (is_empty_process_list(process_list)) {
-        fprintf(stderr, "Process list is empty.\n");
-        return NULL;
-    }
-
-    ProcessNode *cursor = process_list->head;
-    while (cursor != NULL) {
-        if (cursor->process->id == process_id) {
-            cursor->previous->next = cursor->next;
-            cursor->next->previous = cursor->previous;
-
-            cursor->next = NULL;
-            cursor->previous = NULL;
-            Process *process = cursor->process;
-            free(cursor);
-            process_list->size--;
-
-            return process;
-        }
-        cursor = cursor->next;
-    }
-    return NULL;
-}
-
-bool is_empty_process_list(const ProcessLinkedList *process_list) {
-    if (process_list == NULL) {
-        fprintf(stderr, "Null ProcessLinkedList cannot be empty\n");
-        return false;
-    }
-    if (process_list->size == 0) return true;
-    return process_list->head == NULL || process_list->tail == NULL;
-}
-
-/*
- * Function: destroy_process_node_list
- * -------------------------------------
- * @description
- * ProcessNodes naturally form a linked list. This function destroys all nodes
- * in the linked list recursively.
- * ----------------------------------------------------------------------------
- * @param process_node: ProcessNode*
+ * Checks if two ProcessNode instances are equal
+ * ---------------------------------------------------------------------------------
+ * @param a: const ProcessNode*
+ * @param b: const ProcessNode*
  *
- * @return void
+ * @return bool
  */
-void destroy_process_node_list(ProcessNode *process_node) {
-    if (process_node == NULL) return;
-    ProcessNode *forward_cursor = process_node;
-    ProcessNode *rearward_cursor = process_node;
-
-    /* Destroy ProcessNodes ahead of process_node */
-    while (forward_cursor->next != NULL) {
-        destroy_process_node_list(forward_cursor->next);
-    }
-
-    /* Destroy ProcessNodes behind process_node */
-    while (rearward_cursor->previous != NULL) {
-        destroy_process_node_list(rearward_cursor->previous);
-    }
-
-    destroy_process(process_node->process);
+bool process_nodes_are_equal(const ProcessNode *a, const ProcessNode *b) {
+    if (a == b) return true;
+    if (a == NULL || b == NULL) return false;
+    return processes_are_equal(a->process, b->process);
 }
+

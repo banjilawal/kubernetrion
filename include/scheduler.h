@@ -4,7 +4,7 @@
 
 #ifndef SCHEDULER_H
 #define SCHEDULER_H
-#include "process_queue.h"
+#include "process_list.h"
 
 typedef struct scheduler {
     ProcessQueue *queue;

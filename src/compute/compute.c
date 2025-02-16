@@ -6,7 +6,7 @@
 
 #include "process.h"
 #include "processor.h"
-#include "process_queue.h"
+#include "process_list.h"
 #include "process_generator.h"
 
 // #define MAX_PROCESS_NAME_LENGTH 10
@@ -21,19 +21,20 @@
 
 int main(int argc, char *argv[]) {
 
- ProcessQueue * process_queue = generate_process_queue(PROCESS_QUEUE_SIZE);
- Processor * processor = create_processor(1);
-
- while (!process_queue_is_empty(process_queue)) {
-  Process * process = exit_process_queue(process_queue);
-  printf("dequeued processes:%s\nqueue size:%d\n", process_to_string(process), process_queue->size);
-  destroy_process(process);
-  }
- printf("\nProcess queue size: %d\n", process_queue->size);
-
- destroy_processor(processor);
- destroy_process_queue(process_queue);
- return(0);
+ // ProcessQueue * process_queue = generate_process_queue(PROCESS_QUEUE_SIZE);
+ // Processor * processor = create_processor(1);
+ //
+ // while (!process_queue_is_empty(process_queue)) {
+ //  Process * process = exit_process_queue(process_queue);
+ //  printf("dequeued processes:%s\nqueue size:%d\n", process_to_string(process), process_queue->size);
+ //  destroy_process(process);
+ //  }
+ // printf("\nProcess queue size: %d\n", process_queue->size);
+ //
+ // destroy_processor(processor);
+ // destroy_process_queue(process_queue);
+ // return(0);
+    return(0);
 }
 // int main(void) {
 //     srand(time(NULL));

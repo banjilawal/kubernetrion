@@ -14,9 +14,9 @@ typedef struct Process Process;
 
 #define MAX_NAME_LENGTH 20
 
-#define FILE_ID_EXISTS_ERROR_CODE 1010
-#define FILE_NAME_EXISTS_ERROR_CODE 2020
-#define NULL_FILE_ERROR_CODE 3030
+#define FILE_ID_EXISTS_ERROR_CODE 20
+#define FILE_NAME_EXISTS_ERROR_CODE 21
+#define FILE_IS_NULL_ERROR_CODE 22
 
 /*=== FileState Enum and Functions ===*/
 
