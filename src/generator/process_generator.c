@@ -11,10 +11,10 @@
 #include "process_names.h"
 #include "process_list.h"
 
-unsigned int nextId = 1;
+unsigned int nextId = 0;
 
 unsigned int random_priority() {
-    return (rand() % 100);
+    return (rand() % (MAX_PRIORITY - MIN_PRIORITY)) +  MIN_PRIORITY;
 }
 
 unsigned int random_milliseconds() {
@@ -22,11 +22,11 @@ unsigned int random_milliseconds() {
 }
 
 const char * random_process_name () {
-    unsigned int index= rand() % (PROCESS_NAME_COUNT - 1);
-    printf("index: %u\n", index);
-    const char * name =  process_names[index];
-    printf("%s name: %s\n", process_names[index], name);
-    return name;
+    return process_names[rand() % (PROCESS_NAME_COUNT - 1)];
+//    printf("index: %u\n", index);
+    // const char * name =  process_names[index];
+//    printf("%s name: %s\n", process_names[index], name);
+    // return name;
 }
 
 ProcessState random_process_state () {
@@ -39,8 +39,8 @@ ProcessState random_process_state () {
     else return PROCESS_WRITING_FILE;
 }
 
-Process * random_process(Process * parent) {
-    const unsigned int id = nextId;
+Process * random_process(Process *parent) {
+    const unsigned int id = nextId + 1;
     nextId++;
 
     const char *name = random_process_name();
@@ -49,16 +49,15 @@ Process * random_process(Process * parent) {
     File *file = NULL;
     Process *child = NULL;
 
-    Process * process = create_process(id, name, parent, child, file, priority, milliseconds_remaining);
+    Process* process = create_process(id, name, parent, child, file, priority, milliseconds_remaining);
     process->state = random_process_state();
     return process;
 }
 
-ProcessQueue * generate_process_queue (const unsigned int number_of_processes) {
-    ProcessQueue * queue = create_process_queue();
+ProcessQueue* process_stream (const unsigned int stream_size) {
+    ProcessQueue * queue = create_process_queue("");
 
-    for (int i = 0; i < number_of_processes; i++) {
-        Process * process = random_process(NULL);
+    for (int i = 0; i < stream_size; i++) {
         push_onto_process_queue(queue, random_process(NULL));
     }
     return queue;

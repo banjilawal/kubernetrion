@@ -37,7 +37,7 @@ void destroy_processor (Processor * processor) {
 
 
 
-Process * execute_process (Processor * processor, Process * process) {
+Processor * execute_process (Processor * processor, Process * process) {
     if (processor == NULL) {
         printf("%s\n", processor_state_to_string(PROCESSOR_IS_NULL));
         return NULL;
@@ -58,5 +58,5 @@ Process * execute_process (Processor * processor, Process * process) {
         process->state = random_process_state();
     }
     process->milliseconds_remaining--;
-    return process;
+    return processor;
 }

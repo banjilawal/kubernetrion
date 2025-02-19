@@ -22,12 +22,12 @@
 
 // unsigned int nextId = 1;
 
-const char * random_process_name ();
-enum ProcessState random_process_state ();
-ProcessQueue * generate_process_queue (unsigned int number_of_processes);
+const char* random_process_name();
+ProcessState random_process_state();
+ProcessQueue* process_stream(unsigned int stream_size);
 unsigned int random_priority();
 unsigned int random_milliseconds();
 
-Process * random_process(Process * parent);
+Process* random_process(Process *parent);
 
 #endif //PROCESS_GENERATOR_H

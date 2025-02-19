@@ -20,35 +20,58 @@
 
 
 int main(int argc, char *argv[]) {
+    srand(time(NULL));
 
- // ProcessQueue * process_queue = generate_process_queue(PROCESS_QUEUE_SIZE);
- // Processor * processor = create_processor(1);
- //
- // while (!process_queue_is_empty(process_queue)) {
- //  Process * process = exit_process_queue(process_queue);
- //  printf("dequeued processes:%s\nqueue size:%d\n", process_to_string(process), process_queue->size);
- //  destroy_process(process);
- //  }
- // printf("\nProcess queue size: %d\n", process_queue->size);
- //
- // destroy_processor(processor);
- // destroy_process_queue(process_queue);
- // return(0);
+    Process *process = random_process(NULL);
+    ProcessLinkedList *process_list = create_process_list();
+    insert_process_at_list_head(process_list, process);
+    printf("%d processes in list\n", process_list->size);
+    print_process_list(process_list);
+
+    ProcessQueue *ready_queue = create_process_queue("ready_queue");
+    ProcessQueue *waiting_queue = create_process_queue("waiting_queue");
+    ProcessQueue *blocked_queue = create_process_queue("blocked_queue");
+
+    for (int i = 0; i < 20; i++) {
+        process = random_process(NULL);
+        insert_process_at_list_tail(process_list, process);
+        printf("added process %s id:%d\n", process->name, process->id);
+    }
+    printf("%d processes in the list\n", process_list->size);
+    // print_process_list(process_list);
+
+    const Process *search_result = search_process_list(process_list, 5);
+    if (search_result == NULL) {
+        printf("no process found\n");
+    } else {
+        printf("found process %s pid:%d\n", search_result->name, search_result->id);
+    }
+
+    printf("dequeued %s\n", process_to_string(dequeue_from_process_list(process_list)));
+    const unsigned int deletion_count = process_list->size;
+    printf("%d deletions to the list\n", deletion_count);
+    for (int i = 0; i < deletion_count; i++) {
+        process = dequeue_from_process_list(process_list);
+        if (process->state == PROCESS_READY) {
+            printf("%s %d in ready queue \n", process->name, process->id);
+            push_onto_process_queue(ready_queue, process);
+        } else if (process->state == PROCESS_WAITING_EVENT) {
+            printf("%s %d in waiting queue \n", process->name, process->id);
+            push_onto_process_queue(waiting_queue, process);
+        } else if (process->state == PROCESS_READING_FILE_BLOCKED || process->state == PROCESS_WRITING_FILE_BLOCKED) {
+            printf("%s %d in blocked queue \n", process->name, process->id);
+            push_onto_process_queue(blocked_queue, process);
+        } else {
+            insert_process_at_list_tail(process_list, process);
+            printf("%d requeued %s\n",i, process->name);
+        }
+    }
+    printf("process_list size:%d\n", process_list->size);
+    printf("%s size:%d\n", ready_queue->name, ready_queue->processes->size);
+    printf("%s size:%d\n", blocked_queue->name, blocked_queue->processes->size);
+    printf("%s size:%d\n", waiting_queue->name, waiting_queue->processes->size);
+
+    // printf("\n-------------------------------------------------------\n");
+
     return(0);
 }
-// int main(void) {
-//     srand(time(NULL));
-//     Process * parent = NULL;
-//     ProcessQueue * process_queue = create_process_queue();
-//     for (int i = 0; i < 32; i++) {
-//         Process * process = random_process(NULL);
-//         // printf("name:%s ID:%d\n", process->name, process->id);
-//         process_to_string(process);
-//         enter_process_queue(process_queue, process);
-//         // if (i % 6 == 0) { parent = process; }
-//     }
-//     // print_process_queue(process_queue);
-//
-//     free(process_queue);
-//     return 0;
-// }

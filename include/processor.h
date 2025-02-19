@@ -20,6 +20,6 @@ typedef struct Processor {
 
 Processor* create_processor(const unsigned int processor_id);
 void destroy_processor(Processor *processor);
-Process*  execute_process(Processor *processor, Process *process);
+Processor * execute_process(Processor *processor, Process *process);
 
 #endif //PROCESSOR_H

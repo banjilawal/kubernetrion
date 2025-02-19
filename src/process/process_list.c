@@ -256,28 +256,32 @@ Process* dequeue_from_process_list(ProcessLinkedList *process_list) {
         fprintf(stderr, "Cannot search process list null\n");
         return NULL;
     }
+ //   printf("removing process %d of %d process lisr\n", 0, process_list->size);
 
     /* Handle removal from empty ProcessList */
-    if (is_empty_process_list(process_list)) {
-        fprintf(stderr, "Process list is empty.\n");
-        return NULL;
-    }
+//     if (is_empty_process_list(process_list)) {
+//         fprintf(stderr, "Process list is empty.\n");
+//         return NULL;
+//     }
+//
+//   printf("is at the list's head %s", process_to_string(process_list->head->process));
+     ProcessNode *node = process_list->head;
+     process_list->head = process_list->head->next;
+     process_list->head->next->previous = NULL;
 
-    ProcessNode *node = process_list->head;
-    process_list->head = process_list->head->next;
-    process_list->head->next->previous = NULL;
+     Process *process = node->process;
+     // printf("%s process is at the head\n", process_to_string(process));
+     node->next = NULL;
+     node->previous = NULL;
+     process_list->size--;
 
-    Process *process = node->process;
-    node->next = NULL;
-    node->previous = NULL;
-    process_list->size--;
+  //   destroy_process_node(node);
 
-    destroy_process_node(node);
     return process;
 }
 
 /*
- * Function: dequeue_from_process_list
+ * Function: enqueue_from_process_list
  * -------------------------------
  * @definition
  * Remove the process at the head of the list
@@ -292,6 +296,11 @@ unsigned int enqueue_into_process_list(ProcessLinkedList *process_list, Process 
     if (process == NULL) {
         fprintf(stderr, "Cannot add null process to the process list\n");
         return 30;
+    }
+
+    if (search_process_list(process_list, process->id) != NULL) {
+        fprintf(stderr, "Process already exists in the process list\n");
+        return 35;
     }
 
     /* Handle null process_list parameter*/
@@ -331,6 +340,59 @@ bool is_empty_process_list(const ProcessLinkedList *process_list) {
 }
 
 /*
+ * Function: search_process_list
+ * ------------------------------
+ * @definition
+ * Search the list for a process with the targeted id. The search does not
+ * change the list.
+ * ----------------------------------------------------
+ * @param process_list: const ProcessLinkedList
+ * @param process_id: const unsigned int
+ *
+ * @return Process*
+ */
+Process* search_process_list(const ProcessLinkedList *process_list, const unsigned int process_id) {
+    if (process_list == NULL) {
+        fprintf(stderr, "%s. Cannot search for a process in a null processList", PROCESS_LIST_IS_NULL_MESSAGE);
+        return NULL;
+    }
+
+    ProcessNode *cursor = process_list->head;
+    while (cursor != NULL) {
+        if (cursor->process->id == process_id) { return cursor->process; }
+        cursor = cursor->next;
+    }
+    return NULL;
+}
+
+/*
+ * Function: print_process_list
+ * ------------------------------
+ * @definition
+ * Prints the items in a ProcessLinkedList
+ * -----------------------------------------
+ * @param process_list: ProcessList*
+ *
+ * @return void
+ */
+unsigned int print_process_list(const ProcessLinkedList *process_list) {
+    if (process_list == NULL) {
+        fprintf(stderr, "Null ProcessLinkedList cannot be printed\n");
+        return 50;
+    }
+
+    unsigned int count = 0;
+    ProcessNode *cursor = process_list->head;
+    while (cursor != NULL) {
+        printf("index:%d %s\n", count, process_to_string(cursor->process));
+        cursor = cursor->next;
+        count++;
+    }
+    printf("list address:%p list size:%d\n", process_list->head, process_list->size);
+    return 0;
+}
+
+/*
  * Function: destroy_process_node_list
  * -------------------------------------
  * @description
@@ -359,7 +421,7 @@ void destroy_process_node_list(ProcessLinkedList *process_list) {
  * Function: process_queue_state_to_string
  * ----------------------------------------
  * @description:
- * String describing process queue's state
+ * String describing process processes's state
  * @param: process_queue_state: ProcessQueueState
  *
  * @return: char*
@@ -380,12 +442,14 @@ char* process_queue_state_to_string(const ProcessQueueState process_queue_state)
  *  Function: create_process_queue
  *  -------------------------------
  *  @definition:
- *  Creates an empty process queue
+ *  Creates an empty process processes
  *  -------------------------------
  *
  *  @return ProcessQueue*
  */
-ProcessQueue * create_process_queue() {
+ProcessQueue * create_process_queue(char *name) {
+
+    if (name == NULL) { name = ""; }
 
     /*
      * Create the ProcessLinkedList which is a member of ProcessQueue. If the
@@ -410,7 +474,8 @@ ProcessQueue * create_process_queue() {
     }
 
     /* Initialize ProcessQueue fields */
-    process_queue->queue = process_linked_list;
+    process_queue->name = name;
+    process_queue->processes = process_linked_list;
     process_queue->state = PROCESS_QUEUE_IS_EMPTY;
 
     /* Return ProcessQueue instance */
@@ -431,7 +496,7 @@ void destroy_process_queue(ProcessQueue * process_queue) {
     if (process_queue == NULL) return;
 
     /* Destroy the ProcessList influence and free the ProcessQueue's memory*/
-    destroy_process_list(process_queue->queue);
+    destroy_process_list(process_queue->processes);
     free(process_queue);
 }
 
@@ -439,7 +504,7 @@ void destroy_process_queue(ProcessQueue * process_queue) {
  * Function push_onto_process_queue
  * ----------------------------------
  * @definition
- * Add a process to the queue's tail
+ * Add a process to the processes's tail
  * ----------------------------------
  * @param process_queue: ProcessQueue*
  * @param process: Process*
@@ -458,7 +523,7 @@ unsigned int push_onto_process_queue(ProcessQueue *process_queue, Process *proce
         return PROCESS_IS_NULL_ILLEGAL_ARGUMENT_ERROR;
     }
 
-    return insert_process_at_list_tail(process_queue->queue, process);
+    return insert_process_at_list_tail(process_queue->processes, process);
 }
 
 
@@ -466,7 +531,7 @@ unsigned int push_onto_process_queue(ProcessQueue *process_queue, Process *proce
  * Function: pop_from_process_queue
  * -----------------------------------
  * @definition
- * Removes the process at the head of the queue
+ * Removes the process at the head of the processes
  * ----------------------------------------------
  * @param process_queue: ProcessQueue*
  *
@@ -478,34 +543,10 @@ Process* pop_from_process_queue(ProcessQueue *process_queue) {
         return NULL;
     }
 
-    return dequeue_from_process_list(process_queue->queue);
+    return dequeue_from_process_list(process_queue->processes);
 }
 
-/*
- * Function: search_process_list
- * ------------------------------
- * @definition
- * Search the list for a process with the targeted id. The search does not
- * change the list.
- * ----------------------------------------------------
- * @param process_list: const ProcessLinkedList
- * @param process_id: const unsigned int
- *
- * @return Process*
- */
-Process* search_process_list(const ProcessLinkedList *process_list, const unsigned int process_id) {
-    if (process_list == NULL) {
-        fprintf(stderr, "%s. Cannot search for a process in a null processList", PROCESS_LIST_IS_NULL_MESSAGE);
-        return NULL;
-    }
 
-    ProcessNode *cursor = process_list->head;
-    while (cursor != NULL) {
-        if (cursor->process->id == process_id) { return cursor->process; }
-        cursor = cursor->next;
-    }
-    return NULL;
-}
 
 //
 // // RoundRobinProcessQueue: Creation Functions
@@ -515,20 +556,20 @@ Process* search_process_list(const ProcessLinkedList *process_list, const unsign
 //         printf("%s\n", process_queue_state_to_string(PROCESS_QUEUE_IS_NULL));
 //         return NULL;
 //     }
-//     roundRobin->queue = create_process_queue();
+//     roundRobin->processes = create_process_queue();
 //     return roundRobin;
 // }
 //
 // // RoundRobinProcessQueue: Destruction Functions:
 // void destroy_round_robin_process_queue(RoundRobinProcessQueue * round_robin_queue) {
 //     if (round_robin_queue == NULL) return;
-//     destroy_process_queue(round_robin_queue->queue);
+//     destroy_process_queue(round_robin_queue->processes);
 //     free(round_robin_queue);
 // }
 //
 // // RoundRobinProcessQueue: Mutator Functions:
 // bool enter_round_robin_process_queue (const RoundRobinProcessQueue * round_robin_queue, Process * process) {
-//   if (round_robin_queue == NULL || process_queue_is_empty(round_robin_queue->queue)) {
+//   if (round_robin_queue == NULL || process_queue_is_empty(round_robin_queue->processes)) {
 //     printf("%s\n", process_queue_state_to_string(PROCESS_QUEUE_IS_NULL));
 //     return false;
 //   }
@@ -536,20 +577,20 @@ Process* search_process_list(const ProcessLinkedList *process_list, const unsign
 //     printf("%s\n", process_state_to_string(PROCESS_IS_NULL));
 //     return false;
 //   }
-//   enter_process_queue(round_robin_queue->queue, process);
+//   enter_process_queue(round_robin_queue->processes, process);
 //   return true;
 // }
 //
 // Process * exit_round_robin_queue (const RoundRobinProcessQueue * round_robin_queue) {
-//     if (round_robin_queue == NULL || round_robin_queue->queue == NULL) {
+//     if (round_robin_queue == NULL || round_robin_queue->processes == NULL) {
 //         printf("%s\n", process_queue_state_to_string(PROCESS_QUEUE_IS_NULL));
 //         return NULL;
 //     }
-//     if (round_robin_queue->queue->state == PROCESS_QUEUE_IS_EMPTY) {
+//     if (round_robin_queue->processes->state == PROCESS_QUEUE_IS_EMPTY) {
 //         printf("%s\n", process_queue_state_to_string(PROCESS_QUEUE_IS_EMPTY));
 //         return NULL;
 //     }
-//     return exit_process_queue(round_robin_queue->queue);
+//     return exit_process_queue(round_robin_queue->processes);
 // }
 //
 // // RoundRobinProcessQueue: Accessor Functions:
@@ -568,7 +609,7 @@ Process* search_process_list(const ProcessLinkedList *process_list, const unsign
 //     printf("%s\n", process_queue_state_to_string(PROCESS_QUEUE_IS_NULL));
 //     return NULL;
 //   }
-//   priorityQueue->queue = create_process_queue();
+//   priorityQueue->processes = create_process_queue();
 //   return priorityQueue;
 // }
 //
@@ -579,7 +620,7 @@ Process* search_process_list(const ProcessLinkedList *process_list, const unsign
 //
 // // PriorityProcessQueue: Mutator Functions:
 // bool join_priority_process_queue (const PriorityProcessQueue * priority_queue, Process * process) {
-//   if (priority_queue == NULL || priority_queue->queue == NULL) {
+//   if (priority_queue == NULL || priority_queue->processes == NULL) {
 //     printf("%s\n", process_queue_state_to_string(PROCESS_QUEUE_IS_NULL));
 //     return false;
 //   }
@@ -587,8 +628,8 @@ Process* search_process_list(const ProcessLinkedList *process_list, const unsign
 //     printf("%s\n", process_state_to_string(PROCESS_IS_NULL));
 //     return false;
 //   }
-//   if (process_queue_is_empty(priority_queue->queue) || priority_queue->queue->tail->process->priority >= process->priority) {
-//     enter_process_queue(priority_queue->queue, process);
+//   if (process_queue_is_empty(priority_queue->processes) || priority_queue->processes->tail->process->priority >= process->priority) {
+//     enter_process_queue(priority_queue->processes, process);
 //     return true;
 //   }
 //
@@ -597,7 +638,7 @@ Process* search_process_list(const ProcessLinkedList *process_list, const unsign
 //     printf("%s\n", process_node_state_to_string(PROCESS_NODE_IS_NULL));
 //     return false;
 //   }
-//   ProcessNode * cursor = priority_queue->queue->tail;
+//   ProcessNode * cursor = priority_queue->processes->tail;
 //   if (cursor == NULL) {
 //     printf("%s\n", process_node_state_to_string(PROCESS_NODE_IS_NULL));
 //     return false;
@@ -608,7 +649,7 @@ Process* search_process_list(const ProcessLinkedList *process_list, const unsign
 //       node->previous = cursor->previous;
 //       cursor->previous = node;
 //
-//       priority_queue->queue->size++;
+//       priority_queue->processes->size++;
 //       return true;
 //     }
 //     cursor = cursor->next;
@@ -617,14 +658,14 @@ Process* search_process_list(const ProcessLinkedList *process_list, const unsign
 // }
 //
 // Process * exit_priority_process_queue (const PriorityProcessQueue * priority_queue) {
-//   if (priority_queue == NULL || priority_queue->queue == NULL) {
+//   if (priority_queue == NULL || priority_queue->processes == NULL) {
 //     printf("%s\n", process_queue_state_to_string(PROCESS_QUEUE_IS_NULL));
 //     return NULL;
 //   }
-//   if (priority_queue->queue->state == PROCESS_QUEUE_IS_EMPTY) {
+//   if (priority_queue->processes->state == PROCESS_QUEUE_IS_EMPTY) {
 //     printf("%s\n", process_queue_state_to_string(PROCESS_QUEUE_IS_EMPTY));
 //     return NULL;
 //   }
-//   return exit_process_queue(priority_queue->queue);
+//   return exit_process_queue(priority_queue->processes);
 // }
 

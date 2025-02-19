@@ -7,7 +7,7 @@
 
 
 const char * process_string_format = "Process["
-    " address:%p"
+    "address:%p"
     " parentId:%d"
     " id:%d"
     " name:%s"
@@ -15,8 +15,7 @@ const char * process_string_format = "Process["
     " priority:%d"
     " milliseconds_remaining:%d"
     " cpu_cycle_count:%d"
-    " file_reading_from:%s "
-    " file_writing_to:%s]";
+    " file:%s]";
 
 /*
  * Function: print_allocation_failure

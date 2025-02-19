@@ -52,12 +52,16 @@ typedef struct ProcessLinkedList {
 } ProcessLinkedList;
 
 ProcessLinkedList* create_process_list();
+
+unsigned int print_process_list(const ProcessLinkedList *process_list);
 void destroy_process_list(ProcessLinkedList *process_linked_list);
 
 unsigned int insert_process_at_list_head(ProcessLinkedList *process_list, Process *process);
 unsigned int insert_process_at_list_tail(ProcessLinkedList *process_list, Process *process);
 
 Process* remove_process_from_list(ProcessLinkedList *process_list, const unsigned int process_id);
+Process* dequeue_from_process_list(ProcessLinkedList *process_list);
+unsigned int enqueue_into_process_list(ProcessLinkedList *process_list, Process *process);
 Process* search_process_list(const ProcessLinkedList *process_list, const unsigned int process_id);
 
 bool is_empty_process_list(const ProcessLinkedList *process_list);
@@ -75,11 +79,12 @@ typedef enum ProcessQueueState {
 char* process_queue_state_to_string(const ProcessQueueState process_queue_state);
 
 typedef struct ProcessQueue {
-    ProcessLinkedList *queue;
+    char *name;
+    ProcessLinkedList *processes;
     ProcessQueueState state;
 } ProcessQueue;
 
-ProcessQueue* create_process_queue();
+ProcessQueue* create_process_queue(char *name);
 void destroy_process_queue(ProcessQueue *process_queue);
 
 unsigned int push_onto_process_queue(ProcessQueue *process_queue, Process *process);
@@ -87,7 +92,7 @@ Process* pop_from_process_queue(ProcessQueue *process_queue);
 
 // /*=== The RoundRobinProcessQueue Data Type and Functions ===*/
 // typedef struct RoundRobinProcessQueue {
-//     ProcessQueue *queue;
+//     ProcessQueue *processes;
 // } RoundRobinProcessQueue;
 //
 // // RoundRobinProcessQueue: Creation Functions
@@ -101,7 +106,7 @@ Process* pop_from_process_queue(ProcessQueue *process_queue);
 //
 // /*=== The PriorityProcessQueue Data Type and its Functions ===*/
 // typedef struct PriorityProcessQueue {
-//     ProcessQueue* queue;
+//     ProcessQueue* processes;
 // } PriorityProcessQueue;
 //
 // // PriorityProcessQueue: Creation functions
